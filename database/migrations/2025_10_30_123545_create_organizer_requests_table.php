@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('organizer_requests', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->string('name')->nullable();
+            $table->string('phone_no')->nullable();
+            $table->text('reason')->nullable();
+            $table->text('additional_information')->nullable();
+            $table->string('status')->nullable();
+            $table->dateTime('requested_at')->useCurrent();
+            $table->dateTime('approved_at')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('organizer_requests');
+    }
+};
