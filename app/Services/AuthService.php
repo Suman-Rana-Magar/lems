@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use App\Upload;
 use Exception;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AuthService
 {
@@ -30,9 +33,13 @@ class AuthService
                 $path = $this->UploadFile($data['profile_picture'], 'profile_pictures');
                 $data['profile_picture'] = $path['path'];
             }
+            $data['verification_token'] = Str::random(60);
             $newUser = User::create($data);
             $newUser->token = $newUser->createToken('Personal Access Token')->accessToken;
-            $newUser->interests()->sync($data['interests']);
+            if (isset($data['interests'])) {
+                $newUser->interests()->sync($data['interests']);
+            }
+            $newUser->notify(new VerifyEmailNotification($newUser->verification_token));  //treiggers verification email
             DB::commit();
             return $newUser->load('interests');
         } catch (Exception $exception) {

@@ -1,13 +1,24 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api'])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
+    Route::get('/email/verify', [VerificationController::class, 'verify']);
+    Route::post('/email/resend', [VerificationController::class, 'resend']);
 });
 
 Route::middleware(['api', 'auth:api'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 });
+
+Route::middleware(['api', 'auth:api', 'isEmailVerified'])->group(function () {
+    Route::get('/test', [AuthController::class, 'test']);
+});
+
+// Route::middleware(['auth', 'verified'])->group(function() {
+//     Route::get('/dashboard', [DashboardController::class, 'index']);
+// });

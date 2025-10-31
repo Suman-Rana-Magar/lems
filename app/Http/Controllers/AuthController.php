@@ -29,8 +29,14 @@ class AuthController extends BaseController
         return $this->successResponse('User logged out successfully.');
     }
 
-    public function register(UserRegisterRequest $request){
-        $data=$this->authService->register($request->validated());
+    public function register(UserRegisterRequest $request)
+    {
+        $data = $this->authService->register($request->validated());
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('User Registered in Successfully !', LoginResource::make($data));
+    }
+
+    public function test()
+    {
+        return "wow";
     }
 }

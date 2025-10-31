@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,6 +29,7 @@ class User extends Authenticatable
         'ward_no',
         'street',
         'role',
+        'verification_token'
     ];
 
     /**
@@ -40,8 +41,8 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'email_verified_at',
-        'is_email_verified',
         'phone_no',
+        'verification_token'
     ];
 
     /**
@@ -54,7 +55,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_email_verified' => 'boolean',
         ];
     }
 
@@ -62,5 +62,17 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Category::class, 'user_interests', 'user_id', 'category_id')
             ->withTimestamps();
+    }
+
+    public function hasVerifiedEmail()
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    public function markEmailAsVerified()
+    {
+        $this->email_verified_at = now();
+        $this->verification_token = null;
+        $this->save();
     }
 }
