@@ -26,6 +26,7 @@ class LoginResource extends JsonResource
             'street' => $this->street,
             'role' => $this->role,
             'token' => $this->token,
+            'interests' => CategoryResource::collection($this->whenLoaded('interests'))
         ];
     }
 }

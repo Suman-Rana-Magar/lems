@@ -20,4 +20,10 @@ class Category extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_interests', 'category_id', 'user_id')
+            ->withTimestamps();
+    }
 }

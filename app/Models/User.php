@@ -38,7 +38,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token', 
+        'remember_token',
         'email_verified_at',
         'is_email_verified',
         'phone_no',
@@ -54,7 +54,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_email_verified'=>'boolean',
+            'is_email_verified' => 'boolean',
         ];
+    }
+
+    public function interests()
+    {
+        return $this->belongsToMany(Category::class, 'user_interests', 'user_id', 'category_id')
+            ->withTimestamps();
     }
 }
