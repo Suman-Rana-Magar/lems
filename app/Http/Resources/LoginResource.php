@@ -20,11 +20,12 @@ class LoginResource extends JsonResource
             'username' => $this->username,
             'email' => $this->email,
             'phone_no' => $this->phone_no,
-            'profile_picture' => $this->profile_picture,
+            'profile_picture' => asset('storage/' . $this->profile_picture),
             'municipality_id' => $this->municipality_id,
             'ward_no' => $this->ward_no,
             'street' => $this->street,
             'role' => $this->role,
+            'token' => $this->token,
         ];
     }
 }

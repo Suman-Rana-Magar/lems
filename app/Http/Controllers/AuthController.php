@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\LoginResource;
-use AuthService;
-use Illuminate\Http\Request;
+use App\Services\AuthService;
 
 class AuthController extends BaseController
 {
@@ -18,8 +17,7 @@ class AuthController extends BaseController
 
     public function login(LoginRequest $request)
     {
-        return "hi";
         $data = $this->authService->login($request->validated());
-        return $this->successResponse('User Logged in Successfully !', LoginResource::make($data));
+        return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('User Logged in Successfully !', LoginResource::make($data));
     }
 }
