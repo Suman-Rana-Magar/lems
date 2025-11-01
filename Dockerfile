@@ -12,31 +12,32 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy app files
+# Copy application files
 COPY . .
 
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Generate .env if missing
+# Ensure .env exists
 RUN php -r "file_exists('.env') || copy('.env.example', '.env');"
 
 # Generate Laravel app key
 RUN php artisan key:generate --force
 
-# Run artisan commands for production setup
-RUN php artisan migrate --force \
-    && php artisan storage:link \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Run all migrations (MySQL must be configured in env vars)
+RUN php artisan migrate --force
 
-# Passport setup
-RUN php artisan passport:install --force \
-    && php artisan passport:keys --force \
+# Run Laravel caches
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && php artisan storage:link
+
+# Passport setup (without triggering migrations)
+RUN php artisan passport:keys --force \
     && php artisan passport:client --personal --name="Personal Access Client" --no-interaction
 
-# Expose port
+# Expose the port Railway assigns
 EXPOSE 8000
 
 # Start Laravel server
