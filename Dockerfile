@@ -18,10 +18,25 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Generate Laravel app key if not present
-RUN php artisan key:generate --force || true
+# Generate .env if missing
+RUN php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-# Expose port 8000
+# Generate Laravel app key
+RUN php artisan key:generate --force
+
+# Run artisan commands for production setup
+RUN php artisan migrate --force \
+    && php artisan storage:link \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+# Passport setup
+RUN php artisan passport:install --force \
+    && php artisan passport:keys --force \
+    && php artisan passport:client --personal --name="Personal Access Client" --no-interaction
+
+# Expose port
 EXPOSE 8000
 
 # Start Laravel server
