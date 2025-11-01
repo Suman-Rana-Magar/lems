@@ -29,4 +29,20 @@ class CategoryService
             return $exception->getMessage();
         }
     }
+
+    public function update($category, array $data)
+    {
+        DB::beginTransaction();
+        try {
+            if (!($category->name == $data['name']))
+                $data['slug'] = $this->generateSlug($data['name'], Category::class);
+            $category->update($data);
+            DB::commit();
+            return $category;
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            return $exception->getMessage();
+        }
+    }
 }
