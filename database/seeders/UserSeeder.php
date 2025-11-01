@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $municipalityId = Municipality::whereName('गुल्मीदरवार गाउँपालिका')->first()?->id;
-        $email = 'suman@gmail.com';
+        $email = 'admin@lems.com';
         User::updateOrCreate([
             'email' => $email,
         ], [
@@ -26,9 +26,9 @@ class UserSeeder extends Seeder
             'username' => 'sumanrana',
             'email' => $email,
             'email_verified_at' => now(),
-            'password' => Hash::make('password'),
+            'password' => Hash::make('L3M$@DM!n'),
             'phone_no' => '9800001111',
-            'profile_picture' => 'profile_pictures/me.webp',
+            'profile_picture' => 'profile_pictures/anonymus.jpg',
             'remember_token' => Str::random(60),
             'municipality_id' => $municipalityId ? $municipalityId : 1,
             'ward_no' => 2,

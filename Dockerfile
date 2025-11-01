@@ -24,10 +24,13 @@ RUN php -r "file_exists('.env') || copy('.env.example', '.env');"
 # Generate Laravel app key
 RUN php artisan key:generate --force
 
-# Run all migrations (MySQL must be configured in env vars)
+# Run all migrations
 RUN php artisan migrate --force
 
-# Run Laravel caches
+# Run database seeders
+RUN php artisan db:seed --force
+
+# Run Laravel caches and storage link
 RUN php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache \
