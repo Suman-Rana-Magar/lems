@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\RoleEnum;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
@@ -21,6 +23,13 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     Route::group(['prefix' => 'user'], function () {
         Route::get('/', [UserController::class, 'show']);
         Route::post('/', [UserController::class, 'update']);
+    });
+});
+
+Route::middleware(['api', 'auth:api', 'role:' . RoleEnum::ADMIN->value])->group(function () {
+    Route::group(['prefix' => 'category'], function () {
+        Route::get('/', [CategoryController::class, 'index']);
+        Route::post('/', [CategoryController::class, 'store']);
     });
 });
 

@@ -19,7 +19,8 @@ class CategorySeeder extends Seeder
                 'id' => $category['id']
             ], [
                 'name' => $category['name'],
-                'description' => $category['description']
+                'description' => $category['description'],
+                'slug' => $category['slug'],
             ]);
         }
     }
