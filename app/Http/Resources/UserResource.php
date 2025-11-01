@@ -25,6 +25,7 @@ class UserResource extends JsonResource
             'ward_no' => $this->ward_no,
             'street' => $this->street,
             'role' => $this->role,
+            'is_email_verified' => $this->hasVerifiedEmail() ? true : false,
             'interests' => CategoryResource::collection($this->whenLoaded('interests'))
         ];
     }
