@@ -37,4 +37,10 @@ class CategoryController extends BaseController
         $data = $this->categoryService->update($category, $request->validated());
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Category updated successfully', CategoryResource::make($data));
     }
+
+    public function delete(Category $category)
+    {
+        $data = $this->categoryService->delete($category);
+        return !$data ? $this->errorResponse($data) : $this->successResponse('Category deleted successfully');
+    }
 }

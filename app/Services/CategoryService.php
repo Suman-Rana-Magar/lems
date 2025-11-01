@@ -45,4 +45,18 @@ class CategoryService
             return $exception->getMessage();
         }
     }
+
+    public function delete($category)
+    {
+        DB::beginTransaction();
+        try {
+            $category->delete();
+            DB::commit();
+            return true;
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            return $exception->getMessage();
+        }
+    }
 }

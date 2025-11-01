@@ -31,6 +31,7 @@ Route::middleware(['api', 'auth:api', 'role:' . RoleEnum::ADMIN->value])->group(
         Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::post('/{category}', [CategoryController::class, 'update']);
+        Route::delete('/{category}', [CategoryController::class, 'delete']);
     });
 });
 
