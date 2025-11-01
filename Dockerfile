@@ -21,16 +21,18 @@ RUN composer install --optimize-autoloader --no-dev
 # Ensure .env exists
 RUN php -r "file_exists('.env') || copy('.env.example', '.env');"
 
+# Set Railway MySQL env vars in .env
+RUN echo "DB_CONNECTION=mysql" >> .env \
+    && echo "DB_HOST=mysql.railway.internal" >> .env \
+    && echo "DB_PORT=3306" >> .env \
+    && echo "DB_DATABASE=railway" >> .env \
+    && echo "DB_USERNAME=root" >> .env \
+    && echo "DB_PASSWORD=wWxbltuQLpaJiKCwcWhFxzayJmFgtOCm" >> .env
+
 # Generate Laravel app key
 RUN php artisan key:generate --force
 
-# Run all migrations
-RUN php artisan migrate --force
-
-# Run database seeders
-RUN php artisan db:seed --force
-
-# Run Laravel caches and storage link
+# Run Laravel caches and create storage symlink
 RUN php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache \
