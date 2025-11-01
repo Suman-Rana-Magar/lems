@@ -44,7 +44,7 @@ class VerifyEmailNotification extends Notification
             ->line('Thank you for registering on LEMS. Please verify your email address by clicking the button below.')
             ->action('Verify Email', $url)
             ->line('If you did not create an account, no action is required.')
-            ->salutation('Regards, LEMS Team');
+            ->salutation('Regards, ' . config('app.name'));
     }
 
     /**
