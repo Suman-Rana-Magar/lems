@@ -57,4 +57,29 @@ class PasswordResetController extends BaseController
 
         return $this->successResponse('Password reset successfully');
     }
+
+    function updatePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'], // expects new_password_confirmation
+        ]);
+
+        $user = $request->user();
+
+        // check old password
+        if (!Hash::check($request->old_password, $user->password)) {
+            return $this->errorResponse('Old password is incorrect', 422);
+        }
+
+        if ($request->old_password == $request->password) {
+            return $this->errorResponse("Old password and new password can't be matched", 422);
+        }
+
+        // update new password
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return $this->successResponse('Password updated successfully');
+    }
 }

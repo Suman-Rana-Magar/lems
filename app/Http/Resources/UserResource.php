@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class LoginResource extends JsonResource
+class UserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -19,9 +19,13 @@ class LoginResource extends JsonResource
             'name' => $this->name,
             'username' => $this->username,
             'email' => $this->email,
+            'phone_no' => $this->phone_no,
             'profile_picture' => asset('storage/' . $this->profile_picture),
+            'municipality_id' => $this->municipality_id,
+            'ward_no' => $this->ward_no,
+            'street' => $this->street,
             'role' => $this->role,
-            'token' => $this->token,
+            'interests' => CategoryResource::collection($this->whenLoaded('interests'))
         ];
     }
 }

@@ -22,7 +22,7 @@ class AuthService
         if (!$user || !Hash::check($data['password'], $user->password))
             return ('Invalid login credentials.');
         $user->token = $user->createToken('Personal Access Token')->accessToken;
-        return $user->load('interests');
+        return $user;
     }
 
     public function register(array $data)

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,12 @@ Route::middleware(['api'])->group(function () {
 });
 
 Route::middleware(['api', 'auth:api'])->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/password/update', [PasswordResetController::class, 'updatePassword']);
+    Route::group(['prefix' => 'user'], function () {
+        Route::get('/', [UserController::class, 'show']);
+        Route::post('/', [UserController::class, 'update']);
+    });
 });
 
 Route::middleware(['api', 'auth:api', 'isEmailVerified'])->group(function () {
