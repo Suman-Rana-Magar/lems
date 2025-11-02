@@ -22,8 +22,8 @@ class UserSeeder extends Seeder
         User::updateOrCreate([
             'email' => $email,
         ], [
-            'name' => 'Suman Rana',
-            'username' => 'sumanrana',
+            'name' => 'Admin',
+            'username' => 'admin',
             'email' => $email,
             'email_verified_at' => now(),
             'password' => Hash::make('L3M$@DM!n'),

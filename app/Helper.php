@@ -2,8 +2,10 @@
 
 namespace App;
 
+use App\Models\Municipality;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as LengthAwarePaginate;
+use Illuminate\Support\Facades\Http;
 
 trait Helper
 {
@@ -51,5 +53,112 @@ trait Helper
         $response = $this->pagination($chhetras);
         $response['data'] = is_null($chhetras->values()->last()) ? [] : $chhetras->values();
         return $response;
+    }
+
+    /**
+     * Get raw OSM address from coordinates.
+     */
+    public function getAddressFromCoordinates(float $lat, float $lon, string $language = 'en', int $zoom = 18, int $detail = 1): ?array
+    {
+        $response = Http::withHeaders([
+            'User-Agent' => 'LEMS/1.0 (tilakranamagar123456@example.com)'
+        ])->get('https://nominatim.openstreetmap.org/reverse', [
+            'format' => 'json',
+            'lat' => $lat,
+            'lon' => $lon,
+            'zoom' => $zoom,
+            'addressdetails' => $detail,
+            'accept-language' => $language
+        ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['address'] ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Convert the raw OSM address array into a compact human-readable string.
+     */
+    public function compactAddress(array $geo): string
+    {
+        $parts = [];
+
+        // Municipality / ward
+        if (!empty($geo['city_district'])) {
+            $parts[] = $geo['city_district'];
+        } elseif (!empty($geo['city'])) {
+            $parts[] = $geo['city'];
+        } elseif (!empty($geo['town'])) {
+            $parts[] = $geo['town'];
+        }
+
+        // Suburb / neighborhood
+        if (!empty($geo['suburb'])) {
+            $parts[] = $geo['suburb'];
+        } elseif (!empty($geo['neighbourhood'])) {
+            $parts[] = $geo['neighbourhood'];
+        } elseif (!empty($geo['quarter'])) {
+            $parts[] = $geo['quarter'];
+        }
+
+        // District / county
+        if (!empty($geo['county'])) {
+            $parts[] = $geo['county'];
+        } elseif (!empty($geo['state_district'])) {
+            $parts[] = $geo['state_district'];
+        } elseif (!empty($geo['region'])) {
+            $parts[] = $geo['region'];
+        }
+
+        // Country
+        if (!empty($geo['country'])) {
+            $parts[] = $geo['country'];
+        }
+
+        // Remove duplicates and empty values
+        $parts = array_unique(array_filter($parts));
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Get final location info including compact address, Google Maps URL, and city.
+     */
+    public function getEventLocationInfo(float $lat, float $lon): array
+    {
+        $addressArray = $this->getAddressFromCoordinates($lat, $lon);
+
+        $compact = $addressArray ? $this->compactAddress($addressArray) : null;
+
+        $mapUrl = "https://www.google.com/maps/place/{$lat},{$lon}/@{$lat},{$lon},17z";
+
+        // Determine the city / municipality for accuracy
+        $city = null;
+        if ($addressArray) {
+            if (!empty($addressArray['city'])) {
+                $city = $addressArray['city'];
+            } elseif (!empty($addressArray['town'])) {
+                $city = $addressArray['town'];
+            } elseif (!empty($addressArray['village'])) {
+                $city = $addressArray['village'];
+            } elseif (!empty($addressArray['city_district'])) {
+                $city = $addressArray['city_district'];
+            }
+        }
+
+        return [
+            'map_address' => $compact,
+            'map_url' => $mapUrl,
+            'city' => $city,
+        ];
+    }
+
+    public function getMunicipalityIdByName(string $name)
+    {
+        $municipalityId = Municipality::where('name', $name)->first()?->id;
+        return $municipalityId;
     }
 }

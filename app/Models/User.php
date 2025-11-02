@@ -75,4 +75,9 @@ class User extends Authenticatable
         $this->verification_token = null;
         $this->save();
     }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class, 'organizer_id', 'id');
+    }
 }

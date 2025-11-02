@@ -27,4 +27,10 @@ class Category extends Model
         return $this->belongsToMany(User::class, 'user_interests', 'category_id', 'user_id')
             ->withTimestamps();
     }
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_categories', 'category_id', 'event_id')
+            ->withTimestamps();
+    }
 }

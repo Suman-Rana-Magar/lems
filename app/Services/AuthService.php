@@ -29,7 +29,7 @@ class AuthService
     {
         DB::beginTransaction();
         try {
-            if ($data['profile_picture'] && is_file($data['profile_picture'])) {
+            if (isset($data['profile_picture']) && is_file($data['profile_picture'])) {
                 $path = $this->UploadFile($data['profile_picture'], 'profile_pictures');
                 $data['profile_picture'] = $path['path'];
             }

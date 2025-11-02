@@ -28,6 +28,8 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
     Route::group(['prefix' => 'event'], function () {
         Route::get('/', [EventController::class, 'index']);
+        Route::get('/{slug}', [EventController::class, 'showBySlug']);
+        Route::post('/', [EventController::class, 'store'])->middleware('role:' . RoleEnum::ORGANIZER->value);
     });
 });
 
