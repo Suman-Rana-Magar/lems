@@ -3,6 +3,7 @@
 use App\Enums\RoleEnum;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
@@ -20,9 +21,13 @@ Route::middleware(['api'])->group(function () {
 Route::middleware(['api', 'auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/password/update', [PasswordResetController::class, 'updatePassword']);
-    Route::group(['prefix' => 'user'], function () {
+    Route::group(['prefix' => 'profile'], function () {
         Route::get('/', [UserController::class, 'show']);
         Route::post('/', [UserController::class, 'update']);
+    });
+
+    Route::group(['prefix' => 'event'], function () {
+        Route::get('/', [EventController::class, 'index']);
     });
 });
 
@@ -39,4 +44,4 @@ Route::middleware(['api', 'auth:api', 'isEmailVerified'])->group(function () {
     Route::get('/test', [AuthController::class, 'test']);
 });
 
-Route::get('/testing',[AuthController::class,'test']);
+Route::get('/testing', [AuthController::class, 'test']);

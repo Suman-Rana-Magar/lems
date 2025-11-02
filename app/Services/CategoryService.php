@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Helper;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Slug;
 use Exception;
@@ -10,7 +12,16 @@ use Illuminate\Support\Facades\Log;
 
 class CategoryService
 {
-    use Slug;
+    use Slug, Helper;
+
+    private $select = ['id', 'name', 'description', 'slug'];
+
+    public function index(array $request)
+    {
+        $response = $this->paginateRequest($request, Category::class, CategoryResource::class, $this->select);
+        return $response;
+    }
+
     public function store(array $data)
     {
         DB::beginTransaction();
