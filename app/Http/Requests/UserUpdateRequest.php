@@ -25,7 +25,7 @@ class UserUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'phone_no' => ['nullable', 'string', 'max:255'],
-            'profile_picture' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'municipality_id' => ['required', 'exists:municipalities,id'],
             'ward_no' => ['required', 'integer', 'min:1', function ($attribute, $value, $fail) {
                 $municipalityId = $this->municipality_id;

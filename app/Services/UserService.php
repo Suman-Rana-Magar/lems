@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+use function PHPUnit\Framework\isNull;
+
 class UserService
 {
     use Upload;
@@ -17,7 +19,9 @@ class UserService
     {
         DB::beginTransaction();
         try {
-            if ($data['profile_picture'] && is_file($data['profile_picture'])) {
+            if (!isset($data['profile_picture']))
+                unset($data['profile_picture']);
+            if (isset($data['profile_picture']) && is_file($data['profile_picture'])) {
                 $previousPicture = $user->profile_picture;
                 if ($previousPicture)
                     $this->deleteFile($previousPicture);
