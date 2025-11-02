@@ -21,29 +21,21 @@ RUN composer install --optimize-autoloader --no-dev
 # Ensure .env exists
 RUN php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-# Set Railway MySQL env vars in .env
-RUN echo "DB_CONNECTION=mysql" >> .env \
-    && echo "DB_HOST=mysql.railway.internal" >> .env \
-    && echo "DB_PORT=3306" >> .env \
-    && echo "DB_DATABASE=railway" >> .env \
-    && echo "DB_USERNAME=root" >> .env \
-    && echo "DB_PASSWORD=wWxbltuQLpaJiKCwcWhFxzayJmFgtOCm" >> .env
-
-# Generate Laravel app key
+# Generate Laravel app key (doesn’t need DB)
 RUN php artisan key:generate --force
 
-# Run Laravel caches and create storage symlink
+# Cache configurations (doesn’t need DB)
 RUN php artisan config:cache \
     && php artisan route:cache \
-    && php artisan view:cache \
-    && php artisan storage:link
+    && php artisan view:cache
 
-# Passport setup (without triggering migrations)
-RUN php artisan passport:keys --force \
-    && php artisan passport:client --personal --name="Personal Access Client" --no-interaction
-
-# Expose the port Railway assigns
+# Expose port for Railway
 EXPOSE 8000
 
-# Start Laravel server
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Runtime startup commands
+# Wait for DB, then migrate and generate passport keys
+CMD php artisan storage:link && \
+    php artisan migrate --force && \
+    php artisan passport:keys --force && \
+    php artisan passport:client --personal --name="Personal Access Client" --no-interaction && \
+    php artisan serve --host=0.0.0.0 --port=${PORT}
