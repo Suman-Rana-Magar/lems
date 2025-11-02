@@ -37,6 +37,6 @@ class AuthController extends BaseController
 
     public function test()
     {
-        return "wow";
+        return $this->successResponse("API working!");
     }
 }

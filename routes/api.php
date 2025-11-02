@@ -39,6 +39,4 @@ Route::middleware(['api', 'auth:api', 'isEmailVerified'])->group(function () {
     Route::get('/test', [AuthController::class, 'test']);
 });
 
-// Route::middleware(['auth', 'verified'])->group(function() {
-//     Route::get('/dashboard', [DashboardController::class, 'index']);
-// });
+Route::get('/testing',[AuthController::class,'test']);
