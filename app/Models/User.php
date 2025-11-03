@@ -85,4 +85,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(EventRegistration::class);
     }
+
+    public function organizerRequests()
+    {
+        return $this->hasMany(OrganizerRequest::class);
+    }
 }

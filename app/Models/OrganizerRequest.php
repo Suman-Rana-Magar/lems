@@ -18,14 +18,25 @@ class OrganizerRequest extends Model
         'requested_at',
         'approved_at',
         'status',
+        'phone_no_verified_at',
+        'rejection_reason',
     ];
-
-    protected $hidden = [];
 
     protected $casts = [
+        'id' => 'integer',
+        'user_id' => 'integer',
         'requested_at' => 'datetime',
         'approved_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'phone_no_verified_at' => 'datetime',
     ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

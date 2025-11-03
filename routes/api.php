@@ -4,6 +4,7 @@ use App\Enums\RoleEnum;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\OrganizerRequestController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
@@ -39,6 +40,15 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::post('/', [EventController::class, 'store']);
         Route::post('/{event}', [EventController::class, 'update']);
         Route::post('/{event}/cancel', [EventController::class, 'cancel']);
+    });
+
+    Route::group(['prefix' => 'organizer-request', 'middleware' => ['isEmailVerified']], function () {
+        Route::post('/', [OrganizerRequestController::class, 'store']);
+        Route::get('/{organizerRequest}', [OrganizerRequestController::class, 'show']);
+
+        Route::get('/', [OrganizerRequestController::class, 'index'])->middleware('role:' . RoleEnum::ADMIN->value);
+        Route::post('/{organizerRequest}/approve', [OrganizerRequestController::class, 'approve'])->middleware('role:' . RoleEnum::ADMIN->value);
+        Route::post('/{organizerRequest}/reject', [OrganizerRequestController::class, 'reject'])->middleware('role:' . RoleEnum::ADMIN->value);
     });
 });
 
