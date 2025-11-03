@@ -102,7 +102,7 @@ class EventService
         }
     }
 
-    private function checkOverlappingEvent(string $startDatetime, string $endDatetime, Event $event = null): bool
+    private function checkOverlappingEvent(string $startDatetime, string $endDatetime, $event = null): bool
     {
         $organizerId = Auth::id();
 

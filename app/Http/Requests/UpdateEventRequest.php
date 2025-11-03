@@ -43,10 +43,6 @@ class UpdateEventRequest extends FormRequest
             'seat_price' => $hasRegistrations
                 ? ['prohibited'] // cannot edit price if registrations exist
                 : ['sometimes', 'numeric', 'min:0'],
-            'street' => ['nullable', 'string', 'max:255'],
-            'venue' => $hasRegistrations
-                ? ['prohibited'] // cannot change venue after registrations
-                : ['nullable', 'string', 'max:255'],
             'latitude' => ['sometimes', 'numeric', 'between:-90,90'],
             'longitude' => ['sometimes', 'numeric', 'between:-180,180'],
             'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -65,7 +61,6 @@ class UpdateEventRequest extends FormRequest
             'start_datetime.prohibited' => 'You cannot change the start date because registrations already exist.',
             'end_datetime.prohibited' => 'You cannot change the end date because registrations already exist.',
             'seat_price.prohibited' => 'You cannot change the price because registrations already exist.',
-            'venue.prohibited' => 'You cannot change the venue because registrations already exist.',
         ];
     }
 }
