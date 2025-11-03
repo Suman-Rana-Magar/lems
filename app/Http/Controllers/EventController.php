@@ -37,8 +37,15 @@ class EventController extends BaseController
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Event stored successfully', EventResource::make($data));
     }
 
-    public function update(Event $event, UpdateEventRequest $request) {
-        $data = $this->eventService->update($event,$request->validated());
-        return !is_object($data) ? $this->errorResponse($data):$this->successResponse('Event updated successfully',EventResource::make($data));
+    public function update(Event $event, UpdateEventRequest $request)
+    {
+        $data = $this->eventService->update($event, $request->validated());
+        return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Event updated successfully', EventResource::make($data));
+    }
+
+    public function cancel(Event $event)
+    {
+        $data = $this->eventService->cancel($event);
+        return $data !== true ? $this->errorResponse($data) : $this->successResponse('Event cancelled successfully');
     }
 }

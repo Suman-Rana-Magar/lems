@@ -35,7 +35,7 @@ class EventService
     {
         DB::beginTransaction();
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             $data['status'] = $this->getEventStatus($data['start_datetime'], $data['end_datetime']);
 
@@ -69,7 +69,7 @@ class EventService
     {
         DB::beginTransaction();
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->id != $event->organizer_id) return "Sorry, you can not edit this event";
 
@@ -100,6 +100,29 @@ class EventService
             Log::error($exception);
             return $exception->getMessage();
         }
+    }
+
+    public function cancel($event)
+    {
+        if ($event->organizer_id !== Auth::id()) return "Sorry, you can not cancel this event";
+
+        // Check if event is already completed
+        if (Carbon::parse($event->end_datetime)->isPast()) return "Cannot cancel a completed event.";
+
+        // Check if event is already cancelled
+        if ($event->status === 'cancelled') return "Event is already cancelled.";
+
+        // Cancel the event
+        $event->status = 'cancelled';
+        $event->save();
+
+        // Notify registered users (placeholder)
+        foreach ($event->registrations as $registration) {
+            // Example: dispatch notification/email
+            // Notification::send($registration->user, new EventCancelledNotification($event));
+        }
+
+        return true;
     }
 
     private function checkOverlappingEvent(string $startDatetime, string $endDatetime, $event = null): bool

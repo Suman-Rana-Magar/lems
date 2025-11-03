@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 class CategoryController extends BaseController
 {
     private $categoryService;
-    
+
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
@@ -40,6 +40,6 @@ class CategoryController extends BaseController
     public function delete(Category $category)
     {
         $data = $this->categoryService->delete($category);
-        return !$data ? $this->errorResponse($data) : $this->successResponse('Category deleted successfully');
+        return $data !== true ? $this->errorResponse($data) : $this->successResponse('Category deleted successfully');
     }
 }

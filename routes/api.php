@@ -38,6 +38,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified', 'role:' . RoleEnum::ORGANIZER->value]], function () {
         Route::post('/', [EventController::class, 'store']);
         Route::post('/{event}', [EventController::class, 'update']);
+        Route::post('/{event}/cancel', [EventController::class, 'cancel']);
     });
 });
 
