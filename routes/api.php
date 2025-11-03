@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\OrganizerRequestController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PhoneVerificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
@@ -36,13 +37,16 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::post('/', [UserController::class, 'update']);
     });
 
-    Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified', 'role:' . RoleEnum::ORGANIZER->value]], function () {
+    Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified', 'isPhoneVerified', 'role:' . RoleEnum::ORGANIZER->value]], function () {
         Route::post('/', [EventController::class, 'store']);
         Route::post('/{event}', [EventController::class, 'update']);
         Route::post('/{event}/cancel', [EventController::class, 'cancel']);
     });
 
-    Route::group(['prefix' => 'organizer-request', 'middleware' => ['isEmailVerified']], function () {
+    Route::post('/phone/send-otp', [PhoneVerificationController::class, 'sendOtp'])->middleware(['isEmailVerified']);
+    Route::post('/phone/verify-otp', [PhoneVerificationController::class, 'verifyOtp'])->middleware(['isEmailVerified']);
+
+    Route::group(['prefix' => 'organizer-request', 'middleware' => ['isEmailVerified', 'isPhoneVerified']], function () {
         Route::post('/', [OrganizerRequestController::class, 'store']);
         Route::get('/{organizerRequest}', [OrganizerRequestController::class, 'show']);
 

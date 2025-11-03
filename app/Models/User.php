@@ -29,7 +29,9 @@ class User extends Authenticatable
         'ward_no',
         'street',
         'role',
-        'verification_token'
+        'verification_token',
+        'otp',
+        'phone_no_verified_at'
     ];
 
     /**
@@ -42,7 +44,7 @@ class User extends Authenticatable
         'remember_token',
         'email_verified_at',
         'phone_no',
-        'verification_token'
+        'verification_token',
     ];
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\isEmailVerified;
+use App\Http\Middleware\isPhoneVerified;
 use App\Http\Middleware\RoleWiseAccessMiddleware;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Auth\AuthenticationException;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleWiseAccessMiddleware::class,
             'isEmailVerified' => isEmailVerified::class,
+            'isPhoneVerified' => isPhoneVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

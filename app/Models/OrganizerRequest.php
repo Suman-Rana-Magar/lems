@@ -12,13 +12,11 @@ class OrganizerRequest extends Model
     protected $fillable = [
         'user_id',
         'name',
-        'phone_no',
         'reason',
         'additional_information',
         'requested_at',
         'approved_at',
         'status',
-        'phone_no_verified_at',
         'rejection_reason',
     ];
 
@@ -27,7 +25,6 @@ class OrganizerRequest extends Model
         'user_id' => 'integer',
         'requested_at' => 'datetime',
         'approved_at' => 'datetime',
-        'phone_no_verified_at' => 'datetime',
     ];
 
     protected $hidden = [

@@ -22,16 +22,8 @@ class StoreOrganizerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_no' => ['required', 'regex:/^9[78]\d{8}$/'],
             'reason' => ['required', 'string'],
             'additional_information' => ['nullable', 'string'],
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'phone_no.regex' => 'The phone number must be a valid 10-digit Nepali mobile number.',
         ];
     }
 }
