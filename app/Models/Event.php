@@ -61,4 +61,9 @@ class Event extends Model
         return $this->belongsToMany(Category::class, 'event_categories', 'event_id', 'category_id')
             ->withTimestamps();
     }
+
+    public function registrations()
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
 }

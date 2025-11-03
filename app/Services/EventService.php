@@ -65,11 +65,52 @@ class EventService
         }
     }
 
-    private function checkOverlappingEvent(string $startDatetime, string $endDatetime): bool
+    public function update($event, array $data)
+    {
+        DB::beginTransaction();
+        try {
+            $user = auth()->user();
+
+            if ($user->id != $event->organizer_id) return "Sorry, you can not edit this event";
+
+            $data['status'] = $this->getEventStatus($data['start_datetime'], $data['end_datetime']);
+
+            //check for overlapping events
+            if ($this->checkOverlappingEvent($data['start_datetime'], $data['end_datetime'], $event))
+                return 'You already have an event scheduled during this time.';
+            if (!isset($data['cover_image'])) unset($data['cover_image']);
+            $eventLocation = $this->getEventLocationInfo($data['latitude'], $data['longitude']);
+            $data = array_merge($data, $eventLocation);
+            $data['municipality_id'] = $this->getMunicipalityIdByName($data['city']);
+            if (isset($data['cover_image']) && is_file($data['cover_image'])) {
+                $previousCoverImage = $event->cover_image;
+                if ($previousCoverImage) $this->deleteFile($previousCoverImage);
+                $path = $this->UploadFile($data['cover_image'], 'event_cover_images');
+                $data['cover_image'] = $path['path'];
+            }
+
+            $event->update($data);
+            if (isset($data['categories'])) {
+                $event->categories()->sync($data['categories']);
+            }
+            DB::commit();
+            return $event->load('categories');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            return $exception->getMessage();
+        }
+    }
+
+    private function checkOverlappingEvent(string $startDatetime, string $endDatetime, Event $event = null): bool
     {
         $organizerId = Auth::id();
 
         return Event::where('organizer_id', $organizerId)
+            ->when($event, function ($query) use ($event) {
+                // Exclude the current event during update
+                $query->where('id', '!=', $event->id);
+            })
             ->where(function ($query) use ($startDatetime, $endDatetime) {
                 $query->whereBetween('start_datetime', [$startDatetime, $endDatetime])
                     ->orWhereBetween('end_datetime', [$startDatetime, $endDatetime])

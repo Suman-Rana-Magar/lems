@@ -10,12 +10,21 @@ use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api'])->group(function () {
+    //auth
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
+
+    //email
     Route::get('/email/verify', [VerificationController::class, 'verify']);
     Route::post('/email/resend', [VerificationController::class, 'resend']);
+
+    //password
     Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/password/reset', [PasswordResetController::class, 'resetPassword']);
+
+    //event
+    Route::get('/event', [EventController::class, 'index']);
+    Route::get('/event/{slug}', [EventController::class, 'showBySlug']);
 });
 
 Route::middleware(['api', 'auth:api'])->group(function () {
@@ -26,10 +35,9 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::post('/', [UserController::class, 'update']);
     });
 
-    Route::group(['prefix' => 'event'], function () {
-        Route::get('/', [EventController::class, 'index']);
-        Route::get('/{slug}', [EventController::class, 'showBySlug']);
-        Route::post('/', [EventController::class, 'store'])->middleware('role:' . RoleEnum::ORGANIZER->value);
+    Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified', 'role:' . RoleEnum::ORGANIZER->value]], function () {
+        Route::post('/', [EventController::class, 'store']);
+        Route::post('/{event}', [EventController::class, 'update']);
     });
 });
 

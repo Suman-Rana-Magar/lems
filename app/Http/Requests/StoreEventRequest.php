@@ -24,24 +24,17 @@ class StoreEventRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            // 'organizer_id' => ['required', 'exists:users,id'],
-            // 'municipality_id' => ['required', 'exists:municipalities,id'],
             'start_datetime' => ['required', 'date'],
             'end_datetime' => ['required', 'date', 'after:start_datetime', 'after:now'],
             'total_seat' => ['required', 'integer', 'min:1'],
-            // 'status' => ['nullable', 'in:upcoming,ongoing,completed,cancelled'],
-            // 'view_count' => ['nullable', 'integer', 'min:0'],
             'seat_price' => ['required', 'numeric', 'min:0'],
-            'street' => ['nullable', 'string', 'max:255'],
-            'venue' => ['nullable', 'string', 'max:255'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'cover_image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            // 'slug' => ['nullable', 'string', 'max:255', 'unique:events,slug'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
             'categories' => ['required', 'array'],
-            'categories.*' => ['required', 'integer', 'exists:categories,id']
+            'categories.*' => ['required', 'integer', 'distinct', 'exists:categories,id']
         ];
     }
 

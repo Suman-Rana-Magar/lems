@@ -80,4 +80,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Event::class, 'organizer_id', 'id');
     }
+
+    public function registrations()
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
 }

@@ -131,6 +131,10 @@ trait Helper
     {
         $addressArray = $this->getAddressFromCoordinates($lat, $lon);
 
+        // dd($addressArray);
+
+        // $munnicipalityKeys = ['municipality','city'];
+
         $compact = $addressArray ? $this->compactAddress($addressArray) : null;
 
         $mapUrl = "https://www.google.com/maps/place/{$lat},{$lon}/@{$lat},{$lon},17z";
@@ -158,7 +162,11 @@ trait Helper
 
     public function getMunicipalityIdByName(string $name)
     {
-        $municipalityId = Municipality::where('name', $name)->first()?->id;
+        $name = explode('-', $name)[0];
+        $municipalityId = Municipality::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])
+            ->orderByRaw('LENGTH(name)') // shorter names first (more precise)
+            ->orderByRaw('LOCATE(?, LOWER(name))', [strtolower($name)]) // closer match priority
+            ->first()?->id;
         return $municipalityId;
     }
 }

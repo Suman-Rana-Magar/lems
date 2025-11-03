@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PaginationRequest;
 use App\Http\Requests\StoreEventRequest;
+use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\EventResource;
+use App\Models\Event;
 use App\Services\EventService;
 use Illuminate\Http\Request;
 
@@ -33,5 +35,10 @@ class EventController extends BaseController
     {
         $data = $this->eventService->store($request->validated());
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Event stored successfully', EventResource::make($data));
+    }
+
+    public function update(Event $event, UpdateEventRequest $request) {
+        $data = $this->eventService->update($event,$request->validated());
+        return !is_object($data) ? $this->errorResponse($data):$this->successResponse('Event updated successfully',EventResource::make($data));
     }
 }
