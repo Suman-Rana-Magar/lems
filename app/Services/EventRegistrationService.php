@@ -11,6 +11,8 @@ use App\Helper;
 use App\Http\Resources\EventRegistrationResource;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -117,5 +119,27 @@ class EventRegistrationService
         if ($user->role != RoleEnum::ADMIN->value)
             if ($eventRegistration->user_id !== $user->id) return 'You can not view this registration.';
         return $eventRegistration->load('event');
+    }
+
+    public function downloadTicket($registration)
+    {
+        $user = Auth::user();
+
+        // Ensure ownership or admin/organizer
+        if ($registration->user_id !== $user->id && !in_array($user->role, [RoleEnum::ADMIN->value, RoleEnum::ORGANIZER->value])) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $event = $registration->event;
+
+        $pdf = Pdf::loadView('tickets.event_ticket', [
+            'registration' => $registration,
+            'event' => $event,
+            'user' => $registration->user,
+        ])->setPaper('A4', 'portrait');
+
+        $fileName = 'ticket_' . $event->slug . '_' . $registration->id . '.pdf';
+
+        return $pdf->download($fileName);
     }
 }

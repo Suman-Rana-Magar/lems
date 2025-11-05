@@ -48,4 +48,9 @@ class EventRegistrationController extends BaseController
         $data = $this->eventRegistrationService->show($eventRegistration);
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Event registration retrieved successfully', EventRegistrationResource::make($data));
     }
+
+    public function downloadTicket(EventRegistration $eventRegistration){
+        $data = $this->eventRegistrationService->downloadTicket($eventRegistration);
+        return $data;
+    }
 }

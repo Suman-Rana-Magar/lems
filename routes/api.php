@@ -63,6 +63,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::post('/', [EventRegistrationController::class, 'store']);
         Route::post('/{eventRegistration}/cancel', [EventRegistrationController::class, 'cancel']);
         Route::get('/{eventRegistration}', [EventRegistrationController::class, 'show']);
+        Route::get('/{eventRegistration}/ticket', [EventRegistrationController::class, 'downloadTicket']);
     });
 });
 
