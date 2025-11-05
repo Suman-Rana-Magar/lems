@@ -59,6 +59,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
     Route::group(['prefix' => 'event-registration', 'middleware' => 'isEmailVerified'], function () {
         Route::post('/', [EventRegistrationController::class, 'store']);
+        Route::post('/{eventRegistration}/cancel', [EventRegistrationController::class, 'cancel']);
     });
 });
 
