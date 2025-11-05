@@ -4,6 +4,7 @@ use App\Enums\RoleEnum;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\OrganizerRequestController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PhoneVerificationController;
@@ -54,6 +55,10 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::get('/', [OrganizerRequestController::class, 'index'])->middleware('role:' . RoleEnum::ADMIN->value);
         Route::post('/{organizerRequest}/approve', [OrganizerRequestController::class, 'approve'])->middleware('role:' . RoleEnum::ADMIN->value);
         Route::post('/{organizerRequest}/reject', [OrganizerRequestController::class, 'reject'])->middleware('role:' . RoleEnum::ADMIN->value);
+    });
+
+    Route::group(['prefix' => 'event-registration', 'middleware' => 'isEmailVerified'], function () {
+        Route::post('/', [EventRegistrationController::class, 'store']);
     });
 });
 

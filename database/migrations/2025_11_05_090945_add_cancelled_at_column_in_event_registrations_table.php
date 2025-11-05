@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('event_registrations', function (Blueprint $table) {
+            $table->enum('payment_method', ['cash', 'online'])->default('cash');
             $table->dateTime('cancelled_at')->nullable();
             $table->enum('cancellation_reason', [
                 'change_of_plans',
@@ -22,6 +23,7 @@ return new class extends Migration
                 'other'
             ])->nullable();
             $table->text('cancellation_note')->nullable();
+            $table->boolean('is_ticket_generated')->default(false);
         });
     }
 
@@ -31,7 +33,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('event_registrations', function (Blueprint $table) {
-            $table->dropColumn(['cancelled_at', 'cancellation_reason', 'cancellation_note']);
+            $table->dropColumn(['cancelled_at', 'cancellation_reason', 'cancellation_note', 'is_ticket_generated', 'payment_method']);
         });
     }
 };

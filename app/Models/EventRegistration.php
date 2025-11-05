@@ -13,22 +13,25 @@ class EventRegistration extends Model
         'registered_at',
         'status',
         'payment_status',
+        'cancelled_at',
+        'cancellation_reason',
+        'cancellation_note',
+        'is_ticket_generated',
+        'payment_method'
     ];
 
-    // Casts
     protected $casts = [
         'id' => 'integer',
         'user_id' => 'integer',
         'event_id' => 'integer',
         'seats_booked' => 'integer',
         'registered_at' => 'datetime',
-        'status' => 'string',
-        'payment_status' => 'string',
+        'cancelled_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_ticket_generated' => 'boolean'
     ];
 
-    // Hidden fields for API responses
     protected $hidden = [
         'created_at',
         'updated_at',
@@ -43,5 +46,4 @@ class EventRegistration extends Model
     {
         return $this->belongsTo(Event::class);
     }
-
 }
