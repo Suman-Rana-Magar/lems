@@ -23,10 +23,10 @@ class EventRegistrationResource extends JsonResource
             'payment_method' => $this->payment_method,
             'event' => [
                 'id' => $this->event->id,
-                'name' => $this->event->name,
+                'title' => $this->event->title,
                 'slug' => $this->event->slug,
-                'start_date' => $this->event->start_date,
-                'end_date' => $this->event->end_date,
+                'start_datetime' => $this->event->start_datetime,
+                'end_datetime' => $this->event->end_datetime,
                 'map_address' => $this->event->map_address,
                 'map_url' => $this->event->map_url,
                 'status' => $this->event->status,

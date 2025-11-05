@@ -20,23 +20,38 @@ trait Helper
         ];
     }
 
-    public function paginateRequest($request, $class, $resource = null, $select = null, $relation = null)
+    public function paginateRequest($request, $query, $resource = null, $select = null, $relation = null)
     {
-        $per_page = count($class::all());
-        $current_page = config('custom.current_page');
+        $perPage     = 20;
+        $currentPage = config('custom.current_page', 1);
+
+        if (isset($request['per_page'])) {
+            $perPage = (int) $request['per_page'];
+        }
         if (isset($request['current_page'])) {
-            $per_page = isset($request['per_page']) ? $request['per_page'] : 20;
-            if (isset($request['current_page'])) $current_page = $request['current_page'];
+            $currentPage = (int) $request['current_page'];
         }
+
+        $builder = is_string($query) ? $query::query() : $query;
+
+        // ------------------------------------------------------------------
         if ($select) {
-            if ($relation) $chhetras = $class::with($relation)->select($select)->paginate($per_page, '*', null, $current_page);
-            else $chhetras = $class::select($select)->paginate($per_page, '*', null, $current_page);
-        } else {
-            if ($relation) $chhetras = $class::with($relation)->paginate($per_page, '*', null, $current_page);
-            else $chhetras = $class::paginate($per_page, '*', null, $current_page);
+            $builder = $builder->select($select);
         }
-        $response = $this->pagination($chhetras);
-        $response['data'] = isset($resource) ? $resource::collection($chhetras) : $chhetras;
+        if ($relation) {
+            $builder = $builder->with($relation);
+        }
+
+        $paginated = $builder->paginate($perPage, ['*'], 'page', $currentPage);
+
+        $response = $this->pagination($paginated);
+
+        if ($resource) {
+            $response['data'] = $resource::collection($paginated);
+        } else {
+            $response['data'] = $paginated->getCollection();
+        }
+
         return $response;
     }
 

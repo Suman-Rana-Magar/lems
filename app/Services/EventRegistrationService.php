@@ -6,6 +6,9 @@ use App\Enums\EventCancellationReasonEnum;
 use App\Enums\EventRegistartionStatusEnum;
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
+use App\Enums\RoleEnum;
+use App\Helper;
+use App\Http\Resources\EventRegistrationResource;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use Exception;
@@ -15,6 +18,23 @@ use Illuminate\Support\Facades\Log;
 
 class EventRegistrationService
 {
+    use Helper;
+
+    private $select = ['id', 'user_id', 'event_id', 'seats_booked', 'registered_at', 'status', 'payment_status', 'payment_method', 'cancelled_at', 'cancellation_reason', 'cancellation_note', 'is_ticket_generated'];
+
+    public function index($request)
+    {
+        $response = $this->paginateRequest($request, EventRegistration::class, EventRegistrationResource::class, $this->select, 'event');
+        return $response;
+    }
+
+    public function myList($request)
+    {
+        $user = Auth::user();
+        $response = $this->paginateRequest($request, Auth::user()->registrations(), EventRegistrationResource::class, $this->select, 'event');
+        return $response;
+    }
+
     public function store($data)
     {
         DB::beginTransaction();
@@ -76,6 +96,8 @@ class EventRegistrationService
 
             if ($event->start_datetime->subDay()->lte(now())) return 'Cannot cancel registration less than 24 hours before the event starts.';
 
+            if ($eventRegistration->is_ticket_generated) return 'Registration can not be cancelled once ticket is generated';
+
             $data['cancelled_at'] = now();
             $data['status'] = EventRegistartionStatusEnum::CANCELLED->value;
             $eventRegistration->update($data);
@@ -87,5 +109,13 @@ class EventRegistrationService
             DB::rollBack();
             return $exception->getMessage();
         }
+    }
+
+    public function show($eventRegistration)
+    {
+        $user = Auth::user();
+        if ($user->role != RoleEnum::ADMIN->value)
+            if ($eventRegistration->user_id !== $user->id) return 'You can not view this registration.';
+        return $eventRegistration->load('event');
     }
 }

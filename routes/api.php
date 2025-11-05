@@ -58,8 +58,11 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     });
 
     Route::group(['prefix' => 'event-registration', 'middleware' => 'isEmailVerified'], function () {
+        Route::get('/', [EventRegistrationController::class, 'index'])->middleware('role:' . RoleEnum::ADMIN->value);
+        Route::get('/my', [EventRegistrationController::class, 'myList']);
         Route::post('/', [EventRegistrationController::class, 'store']);
         Route::post('/{eventRegistration}/cancel', [EventRegistrationController::class, 'cancel']);
+        Route::get('/{eventRegistration}', [EventRegistrationController::class, 'show']);
     });
 });
 
