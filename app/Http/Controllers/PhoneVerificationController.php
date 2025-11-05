@@ -11,6 +11,28 @@ use Illuminate\Support\Facades\Auth;
 
 class PhoneVerificationController extends BaseController
 {
+    public function verify(Request $request)
+    {
+        $request->validate([
+            'phone_no' => ['required', 'regex:/^(97|98)\d{8}$/'],
+        ], [
+            'phone_no.required' => 'Phone number is required.',
+            'phone_no.regex' => 'Please enter a valid Nepali phone number starting with 97 or 98 and exactly 10 digits long.',
+        ]);
+
+        $otp = rand(100000, 999999);
+        $phone = $request->phone_no;
+
+        $user = Auth::user();
+        // Store or update OTP in database
+        $user->update([
+            'phone_no' => $phone,
+            'phone_no_verified_at' => now(),
+            'otp' => null
+        ]);
+
+        return $this->successResponse('Phone no. verified successfully successfully.');
+    }
     public function sendOtp(Request $request)
     {
         if (Auth::user()->phone_no_verified_at) return $this->errorResponse("Phone no. already verified");

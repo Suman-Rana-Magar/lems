@@ -37,14 +37,15 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::post('/', [UserController::class, 'update']);
     });
 
-    Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified', 'isPhoneVerified', 'role:' . RoleEnum::ORGANIZER->value]], function () {
+    Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified', 'isPhoneVerified', 'role:' . RoleEnum::ORGANIZER->value . ',' . RoleEnum::ADMIN->value]], function () {
         Route::post('/', [EventController::class, 'store']);
         Route::post('/{event}', [EventController::class, 'update']);
         Route::post('/{event}/cancel', [EventController::class, 'cancel']);
     });
 
-    Route::post('/phone/send-otp', [PhoneVerificationController::class, 'sendOtp'])->middleware(['isEmailVerified']);
-    Route::post('/phone/verify-otp', [PhoneVerificationController::class, 'verifyOtp'])->middleware(['isEmailVerified']);
+    // Route::post('/phone/send-otp', [PhoneVerificationController::class, 'sendOtp'])->middleware(['isEmailVerified']);
+    // Route::post('/phone/verify-otp', [PhoneVerificationController::class, 'verifyOtp'])->middleware(['isEmailVerified']);
+    Route::post('/phone/verify', [PhoneVerificationController::class, 'verify'])->middleware(['isEmailVerified']);
 
     Route::group(['prefix' => 'organizer-request', 'middleware' => ['isEmailVerified', 'isPhoneVerified']], function () {
         Route::post('/', [OrganizerRequestController::class, 'store']);
