@@ -75,9 +75,3 @@ Route::middleware(['api', 'auth:api', 'role:' . RoleEnum::ADMIN->value])->group(
         Route::delete('/{category}', [CategoryController::class, 'delete']);
     });
 });
-
-Route::middleware(['api', 'auth:api', 'isEmailVerified'])->group(function () {
-    Route::get('/test', [AuthController::class, 'test']);
-});
-
-Route::get('/testing', [AuthController::class, 'test']);

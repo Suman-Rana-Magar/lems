@@ -34,9 +34,4 @@ class AuthController extends BaseController
         $data = $this->authService->register($request->validated());
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('User Registered in Successfully !', LoginResource::make($data));
     }
-
-    public function test()
-    {
-        return $this->successResponse("API working!");
-    }
 }
