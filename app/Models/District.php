@@ -16,6 +16,16 @@ class District extends Model
 
     protected $hidden = [];
 
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function municipalities()
+    {
+        return $this->hasMany(Municipality::class);
+    }
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

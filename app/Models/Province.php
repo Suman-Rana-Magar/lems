@@ -21,5 +21,9 @@ class Province extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+    public function districts()
+    {
+        return $this->hasMany(District::class);
+    }
 
 }

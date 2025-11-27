@@ -10,6 +10,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PhoneVerificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\ResourcesController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api'])->group(function () {
@@ -28,6 +29,11 @@ Route::middleware(['api'])->group(function () {
     //event
     Route::get('/event', [EventController::class, 'index']);
     Route::get('/event/{slug}', [EventController::class, 'showBySlug']);
+
+    //resources
+    Route::get('/resources/address', [ResourcesController::class, 'address']);
+    Route::get('/resources/categories', [ResourcesController::class, 'categories']);
+    // Route::get('/resources/enums', [ResourcesController::class, 'enums']);
 });
 
 Route::middleware(['api', 'auth:api'])->group(function () {

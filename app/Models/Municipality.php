@@ -18,6 +18,11 @@ class Municipality extends Model
     protected $hidden = [
     ];
 
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
     protected $casts = [
         'no_of_wards' => 'integer',
         'created_at' => 'datetime',
