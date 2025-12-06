@@ -108,9 +108,9 @@ Provide a relatedness object for every unique pair of categories. The output MUS
     {
         DB::beginTransaction();
         try {
-            if (isset($data['relation']) && count($data['relation']) > 0 && is_array($data['relation'])) {
+            if (isset($data['relations']) && count($data['relations']) > 0 && is_array($data['relations'])) {
                 $category = new Category();
-                foreach ($data['relation'] as $relation) {
+                foreach ($data['relations'] as $relation) {
                     CategoryRelation::updateOrCreate([
                         'category_a_id' => $category->where('slug', $relation['category_a'])->first()?->id,
                         'category_b_id' => $category->where('slug', $relation['category_b'])->first()?->id,

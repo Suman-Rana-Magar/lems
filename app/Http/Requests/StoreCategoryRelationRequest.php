@@ -22,21 +22,34 @@ class StoreCategoryRelationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'relation' => ['required', 'array'],
-            'relation.*.category_a' => ['required', 'exists:categories,slug'],
-            'relation.*.category_b' => ['required', 'exists:categories,slug', function($attribute, $value, $fail) {
-                // Extract the index from attribute (e.g., "relation.0.category_b" -> 0)
-                preg_match('/relation\.(\d+)\.category_b/', $attribute, $matches);
-                $index = $matches[1] ?? null;
-                
-                if ($index !== null) {
-                    $categoryA = $this->input("relation.{$index}.category_a");
-                    if ($value == $categoryA) {
-                        $fail("category_a and category_b can't be same");
+            'relations' => ['required', 'array'],
+            'relations.*.category_a' => [
+                'required',
+                'exists:categories,slug',
+            ],
+            'relations.*.category_b' => [
+                'required',
+                'exists:categories,slug',
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1]; // get the array index
+                    $categoryA = $this->input("relations.$index.category_a");
+
+                    if ($categoryA === $value) {
+                        $fail("category_a and category_b cannot be the same.");
+                    }
+
+                    // Check for duplicate pairs
+                    $allRelations = $this->input('relations', []);
+                    foreach ($allRelations as $i => $relation) {
+                        if ($i != $index &&
+                            (($relation['category_a'] === $categoryA && $relation['category_b'] === $value) ||
+                             ($relation['category_a'] === $value && $relation['category_b'] === $categoryA))) {
+                            $fail("Duplicate category pair detected: $categoryA → $value.");
+                        }
                     }
                 }
-            }],
-            'relation.*.relatedness' => ['required', 'numeric', 'between:0,1'],
+            ],
+            'relations.*.relatedness' => ['required', 'numeric', 'between:0,1'],
         ];
     }
 }
