@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CategoryStoreRequest;
 use App\Http\Requests\CategoryUpdateRequest;
 use App\Http\Requests\PaginationRequest;
+use App\Http\Requests\StoreCategoryRelationRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\CategoryService;
@@ -41,5 +42,17 @@ class CategoryController extends BaseController
     {
         $data = $this->categoryService->delete($category);
         return $data !== true ? $this->errorResponse($data) : $this->successResponse('Category deleted successfully');
+    }
+
+    public function getRelationPrompt()
+    {
+        $data = $this->categoryService->getRelationPrompt();
+        return $this->successResponse("Prompt retrieved successfully", $data);
+    }
+
+    public function storeRelation(StoreCategoryRelationRequest $request)
+    {
+        $data = $this->categoryService->storeRelation($request->validated());
+        return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Categories Relation stored successfully');
     }
 }

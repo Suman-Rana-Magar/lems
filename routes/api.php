@@ -77,6 +77,8 @@ Route::middleware(['api', 'auth:api', 'role:' . RoleEnum::ADMIN->value])->group(
     Route::group(['prefix' => 'category'], function () {
         Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
+        Route::post('/relation', [CategoryController::class, 'storeRelation']);
+        Route::get('/relation-prompt', [CategoryController::class, 'getRelationPrompt']);
         Route::post('/{category}', [CategoryController::class, 'update']);
         Route::delete('/{category}', [CategoryController::class, 'delete']);
     });

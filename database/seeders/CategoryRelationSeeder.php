@@ -16,11 +16,19 @@ class CategoryRelationSeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = Category::select('id', 'name')->orderBy('id')->get()->toJson();
+        $categories = Category::select('id', 'name')->orderBy('id')->get();
         $ollamaService = new OllamaService();
 
+        $categoryCount = count($categories); // e.g., 7
+        $expectedPairs = $categoryCount * ($categoryCount - 1) / 2;
+
         $prompt = "You are a category relation assistant. From the following categories, provide the relatedness score between all pairs of categories from 0.00 to 1.00.
-The relation is bidirectional, meaning if category A is related to category B, then category B is also related to category A, so only provide one direction for each pair.
+
+Rules:
+1. Include each unique pair once: only category_a_id → category_b_id where category_a_id < category_b_id.
+2. Do not include the reverse pair (B->A) or self-relations.
+3. You must return exactly $expectedPairs objects — one for each unique pair.
+4. Provide ONLY JSON, no extra text or explanations.
 
 The output must strictly follow this JSON format (as an array of objects):
 
@@ -34,10 +42,11 @@ The output must strictly follow this JSON format (as an array of objects):
 
 Here are the categories: $categories
 
-Use the correct category IDs from the list and provide a relatedness object for every unique pair of categories. Do not include duplicate pairs or self-relations.";
+Provide a relatedness object for every unique pair of categories. The output MUST contain exactly $expectedPairs items.";
 
-        $recommendation = $ollamaService->getCategoryRelations($prompt, OllamaModel::GEMMA3_4B->value);
-        if ($recommendation && count($recommendation) > 0) {
+dd($prompt);
+        $recommendation = $ollamaService->getCategoryRelations($prompt, OllamaModel::GEMMA3_1B->value);
+        if ($recommendation && count($recommendation) > 0 && is_array($recommendation)) {
             foreach ($recommendation as $relation) {
                 CategoryRelation::updateOrCreate([
                     'category_a_id' => $relation['category_a_id'],

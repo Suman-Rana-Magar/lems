@@ -28,7 +28,6 @@ class OllamaService
             ]);
 
             $data = json_decode($response->getBody()->getContents(), true);
-
             if (!isset($data['response'])) {
                 return null;
             }
