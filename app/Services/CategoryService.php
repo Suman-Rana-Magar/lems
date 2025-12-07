@@ -106,21 +106,31 @@ Provide a relatedness object for every unique pair of categories. The output MUS
 
     public function storeRelation(array $data)
     {
-        DB::beginTransaction();
         try {
-            if (isset($data['relations']) && count($data['relations']) > 0 && is_array($data['relations'])) {
-                $category = new Category();
+            if (isset($data['relations']) && is_array($data['relations']) && count($data['relations']) > 0) {
+                DB::beginTransaction();
                 foreach ($data['relations'] as $relation) {
-                    CategoryRelation::updateOrCreate([
-                        'category_a_id' => $category->where('slug', $relation['category_a'])->first()?->id,
-                        'category_b_id' => $category->where('slug', $relation['category_b'])->first()?->id,
-                    ], [
-                        'relatedness' => $relation['relatedness'],
-                    ]);
+                    $categoryA = Category::where('slug', $relation['category_a'])->firstOrFail()->id;
+                    $categoryB = Category::where('slug', $relation['category_b'])->firstOrFail()->id;
+                    // Normalize pair: always store the smaller ID as category_a_id
+                    $a = min($categoryA, $categoryB);
+                    $b = max($categoryA, $categoryB);
+                    CategoryRelation::updateOrCreate(
+                        [
+                            'category_a_id' => $a,
+                            'category_b_id' => $b,
+                        ],
+                        [
+                            'relatedness' => $relation['relatedness'],
+                        ]
+                    );
                 }
+
                 DB::commit();
+
                 return CategoryRelation::first();
             }
+
             return "Please provide at least one category relation";
         } catch (Exception $exception) {
             DB::rollBack();
