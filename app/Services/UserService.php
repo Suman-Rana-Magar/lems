@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Helper;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Upload;
 use Exception;
@@ -13,7 +15,15 @@ use function PHPUnit\Framework\isNull;
 
 class UserService
 {
-    use Upload;
+    use Upload, Helper;
+
+    private $select = ['id', 'name', 'username', 'email', 'phone_no', 'profile_picture', 'municipality_id', 'ward_no', 'street', 'role'];
+
+    public function index(array $request)
+    {
+        $response = $this->paginateRequest($request, User::class, UserResource::class, $this->select, ['interests']);
+        return $response;
+    }
 
     public function update($user, array $data)
     {

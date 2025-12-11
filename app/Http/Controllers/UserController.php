@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PaginationRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserService;
@@ -14,6 +15,12 @@ class UserController extends BaseController
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
+    }
+
+    public function index(PaginationRequest $request)
+    {
+        $users = $this->userService->index($request->validated());
+        return $this->successResponse('Users retrieved successfully', $users);
     }
 
     public function show(Request $request)

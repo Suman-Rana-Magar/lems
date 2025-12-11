@@ -74,6 +74,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 });
 
 Route::middleware(['api', 'auth:api', 'role:' . RoleEnum::ADMIN->value])->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
     Route::group(['prefix' => 'category'], function () {
         Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
