@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -65,5 +66,31 @@ class Event extends Model
     public function registrations()
     {
         return $this->hasMany(EventRegistration::class);
+    }
+
+    public function status()
+    {
+        // If explicitly cancelled in DB, honor that first
+        if ($this->getAttribute('status') === 'cancelled') {
+            return 'cancelled';
+        }
+
+        $now = Carbon::now();
+        $start = Carbon::parse($this->start_datetime);
+        $end = Carbon::parse($this->end_datetime);
+
+        if ($now->lt($start)) {
+            return 'upcoming';
+        }
+
+        if ($now->between($start, $end)) {
+            return 'ongoing';
+        }
+
+        if ($now->gt($end)) {
+            return 'completed';
+        }
+
+        return $this->getAttribute('status');
     }
 }

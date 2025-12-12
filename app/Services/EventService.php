@@ -20,8 +20,19 @@ class EventService
 
     public function index($request)
     {
-        $response = $this->paginateRequest($request, Event::class, EventIndexResource::class, '*', 'categories');
-        return $response;
+        // Recommended event(s)
+        $recommended = EventRecommendationService::getRecommendedEvents();
+        $recommendedIds = is_object($recommended) ? $recommended->pluck('id') : [];
+
+        // Paginated list excluding recommended
+        $otherQuery = Event::whereNotIn('id', $recommendedIds)
+            ->where('status', '!=', 'cancelled');
+        $other = $this->paginateRequest($request, $otherQuery, EventIndexResource::class, '*', 'categories');
+
+        return [
+            'recommended' => is_object($recommended) ? EventIndexResource::collection($recommended) : [],
+            'other' => $other,
+        ];
     }
 
     public function showBySlug($slug)

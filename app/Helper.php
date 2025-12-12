@@ -175,13 +175,17 @@ trait Helper
         ];
     }
 
-    public function getMunicipalityIdByName(string $name)
+    public function getMunicipalityIdByName(?string $name)
     {
-        $name = explode('-', $name)[0];
-        $municipalityId = Municipality::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])
-            ->orderByRaw('LENGTH(name)') // shorter names first (more precise)
-            ->orderByRaw('LOCATE(?, LOWER(name))', [strtolower($name)]) // closer match priority
-            ->first()?->id;
-        return $municipalityId;
+        if ($name!==null) {
+            $name = explode('-', $name)[0];
+            $municipalityId = Municipality::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])
+                ->orderByRaw('LENGTH(name)') // shorter names first (more precise)
+                ->orderByRaw('LOCATE(?, LOWER(name))', [strtolower($name)]) // closer match priority
+                ->first()?->id;
+            return $municipalityId;
+        }
+        return null;
     }
+    
 }
