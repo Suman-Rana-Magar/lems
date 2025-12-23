@@ -21,7 +21,7 @@ class UserService
 
     public function index(array $request)
     {
-        $response = $this->paginateRequest($request, User::class, UserResource::class, $this->select, ['interests']);
+        $response = $this->paginateRequest($request, User::class, UserResource::class, $this->select, ['interests', 'municipality.district.province']);
         return $response;
     }
 
@@ -43,7 +43,7 @@ class UserService
                 $user->interests()->sync($data['interests']);
             }
             DB::commit();
-            return $user->load('interests');
+            return $user->load(['interests', 'municipality.district.province']);
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);

@@ -25,7 +25,7 @@ class UserController extends BaseController
 
     public function show(Request $request)
     {
-        $user = $request->user()->load('interests');
+        $user = $request->user()->load(['interests', 'municipality.district.province']);
         return $this->successResponse('Profile retrieved successfully', UserResource::make($user));
     }
 

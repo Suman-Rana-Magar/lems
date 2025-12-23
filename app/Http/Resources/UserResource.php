@@ -21,7 +21,17 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone_no' => $this->phone_no,
             'profile_picture' => asset('storage/' . $this->profile_picture),
-            'municipality_id' => $this->municipality_id,
+            'address' => $this->when($this->relationLoaded('municipality') && $this->municipality, function () {
+                $municipality = $this->municipality;
+                $district = $municipality->relationLoaded('district') ? $municipality->district : null;
+                $province = $district && $district->relationLoaded('province') ? $district->province : null;
+                
+                return [
+                    'province' => $province ? ['id' => $province->id, 'name' => $province->name] : null,
+                    'district' => $district ? ['id' => $district->id, 'name' => $district->name] : null,
+                    'municipality' => $municipality ? ['id' => $municipality->id, 'name' => $municipality->name] : null,
+                ];
+            }),
             'ward_no' => $this->ward_no,
             'street' => $this->street,
             'role' => $this->role,

@@ -92,4 +92,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(OrganizerRequest::class);
     }
+
+    public function municipality()
+    {
+        return $this->belongsTo(Municipality::class);
+    }
 }

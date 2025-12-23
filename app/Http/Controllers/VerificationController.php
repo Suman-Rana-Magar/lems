@@ -21,12 +21,12 @@ class VerificationController extends BaseController
             ->first();
 
         if (!$user) {
-            return $this->errorResponse('Invalid verification link.');
+            return redirect('https://local-event-management-system-lems.vercel.app');
         }
 
         $user->markEmailAsVerified();
 
-        return $this->successResponse('Email verified successfully.');
+        return redirect('https://local-event-management-system-lems.vercel.app');
     }
 
     public function resend(Request $request)
