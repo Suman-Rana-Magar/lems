@@ -58,6 +58,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Store/read timestamps in Nepali time at the DB session level
+            'timezone' => env('DB_TIMEZONE', '+05:45'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

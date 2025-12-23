@@ -48,6 +48,10 @@ class EventService
         try {
             $user = Auth::user();
 
+            // Subtract 05:45 from datetime fields
+            $data['start_datetime'] = Carbon::parse($data['start_datetime'])->subHours(5)->subMinutes(45)->format('Y-m-d H:i:s');
+            $data['end_datetime'] = Carbon::parse($data['end_datetime'])->subHours(5)->subMinutes(45)->format('Y-m-d H:i:s');
+
             $data['status'] = $this->getEventStatus($data['start_datetime'], $data['end_datetime']);
 
             //check for overlapping events
@@ -83,6 +87,10 @@ class EventService
             $user = Auth::user();
 
             if ($user->id != $event->organizer_id) return "Sorry, you can not edit this event";
+
+            // Subtract 05:45 from datetime fields
+            $data['start_datetime'] = Carbon::parse($data['start_datetime'])->subHours(5)->subMinutes(45)->format('Y-m-d H:i:s');
+            $data['end_datetime'] = Carbon::parse($data['end_datetime'])->subHours(5)->subMinutes(45)->format('Y-m-d H:i:s');
 
             $data['status'] = $this->getEventStatus($data['start_datetime'], $data['end_datetime']);
 

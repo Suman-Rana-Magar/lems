@@ -75,9 +75,10 @@ class Event extends Model
             return 'cancelled';
         }
 
-        $now = Carbon::now();
-        $start = Carbon::parse($this->start_datetime);
-        $end = Carbon::parse($this->end_datetime);
+        $timezone = 'Asia/Kathmandu';
+        $now = Carbon::now($timezone);
+        $start = $this->start_datetime->setTimezone($timezone);
+        $end = $this->end_datetime->setTimezone($timezone);
 
         if ($now->lt($start)) {
             return 'upcoming';

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,8 +22,8 @@ class EventIndexResource extends JsonResource
             // 'description'      => $this->description,
             // 'organizer_id'     => $this->organizer_id,
             // 'municipality_id'  => $this->municipality_id,
-            'start_datetime'   => $this->start_datetime,
-            'end_datetime'     => $this->end_datetime,
+            'start_datetime'   => $this->start_datetime ? $this->start_datetime->setTimezone('Asia/Kathmandu')->format('Y-m-d H:i:s') : null,
+            'end_datetime'     => $this->end_datetime ? $this->end_datetime->setTimezone('Asia/Kathmandu')->format('Y-m-d H:i:s') : null,
             // 'total_seat'       => $this->total_seat,
             // 'remaining_seat'   => $this->remaining_seat,
             'status'           => $this->status(),

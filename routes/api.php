@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['api'])->group(function () {
     //auth
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register']);
 
     //email
     Route::get('/email/verify', [VerificationController::class, 'verify']);
