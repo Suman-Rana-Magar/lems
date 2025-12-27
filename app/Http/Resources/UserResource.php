@@ -36,6 +36,7 @@ class UserResource extends JsonResource
             'street' => $this->street,
             'role' => $this->role,
             'is_email_verified' => $this->hasVerifiedEmail() ? true : false,
+            'is_phone_verified' => $this->hasVerifiedPhone() ? true : false,
             'interests' => CategoryResource::collection($this->whenLoaded('interests'))
         ];
     }
