@@ -187,5 +187,28 @@ trait Helper
         }
         return null;
     }
+
+    /**
+     * Generate QR code as data URI (PNG if imagick available, SVG otherwise)
+     */
+    public function generateQrCodeDataUri(string $data, int $size = 120): string
+    {
+        // Try PNG format first (will use imagick if available)
+        try {
+            $qrPng = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                ->size($size)
+                ->errorCorrection('H')
+                ->generate($data);
+            return 'data:image/png;base64,' . base64_encode($qrPng);
+        } catch (\Exception $e) {
+            // Fallback to SVG if PNG fails (imagick not available)
+            $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size($size)
+                ->errorCorrection('H')
+                ->generate($data);
+            $qrSvg = preg_replace('/<\?xml[^>]*\?>/i', '', $qrSvg);
+            $qrSvg = trim($qrSvg);
+            return 'data:image/svg+xml;charset=utf-8,' . rawurlencode($qrSvg);
+        }
+    }
     
 }

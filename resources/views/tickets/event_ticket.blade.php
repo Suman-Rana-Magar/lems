@@ -114,15 +114,24 @@
                 <p><strong>Phone:</strong> {{ $event->organizer->phone_no }}</p>
 
                 <div class="qr-code">
-                    <img src="data:image/png;base64, {!! base64_encode(
-                        QrCode::format('png')->size(120)->generate(
-                                json_encode([
-                                    'registration_id' => $registration->id,
-                                    'user_id' => $user->id,
-                                    'event_id' => $event->id,
-                                ]),
-                            ),
-                    ) !!}">
+                    @if(isset($qrCodeDataUri))
+                        <img src="{{ $qrCodeDataUri }}" alt="QR Code" style="width: 120px; height: 120px; display: block; margin: 0 auto;">
+                    @else
+                        @php
+                            // Fallback: generate QR code directly in view if not passed from service
+                            $qrData = json_encode([
+                                'registration_id' => $registration->id,
+                                'user_id' => $user->id,
+                                'event_id' => $event->id,
+                            ]);
+                            // Use SVG (doesn't require imagick)
+                            $qrSvg = QrCode::size(120)->errorCorrection('H')->generate($qrData);
+                            $qrSvg = preg_replace('/<\?xml[^>]*\?>/i', '', $qrSvg);
+                            $qrSvg = trim($qrSvg);
+                            $qrDataUri = 'data:image/svg+xml;charset=utf-8,' . rawurlencode($qrSvg);
+                        @endphp
+                        <img src="{{ $qrDataUri }}" alt="QR Code" style="width: 120px; height: 120px; display: block; margin: 0 auto;">
+                    @endif
                 </div>
                 <p>Scan for Verification</p>
             </div>

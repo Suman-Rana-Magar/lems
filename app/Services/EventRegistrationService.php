@@ -132,10 +132,24 @@ class EventRegistrationService
 
         $event = $registration->event;
 
+        // Generate QR code data URI (handles imagick availability)
+        $qrData = json_encode([
+            'registration_id' => $registration->id,
+            'user_id' => $registration->user->id,
+            'event_id' => $event->id,
+        ]);
+        $qrCodeDataUri = $this->generateQrCodeDataUri($qrData, 120);
+
+        // Mark ticket as generated (prevents cancellation)
+        if (!$registration->is_ticket_generated) {
+            $registration->update(['is_ticket_generated' => true]);
+        }
+
         $pdf = Pdf::loadView('tickets.event_ticket', [
             'registration' => $registration,
             'event' => $event,
             'user' => $registration->user,
+            'qrCodeDataUri' => $qrCodeDataUri,
         ])->setPaper('A4', 'portrait');
 
         $fileName = 'ticket_' . $event->slug . '_' . $registration->id . '.pdf';
