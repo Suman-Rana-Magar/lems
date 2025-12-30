@@ -125,7 +125,7 @@
                                 'event_id' => $event->id,
                             ]);
                             // Use SVG (doesn't require imagick)
-                            $qrSvg = QrCode::size(120)->errorCorrection('H')->generate($qrData);
+                            $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->errorCorrection('H')->generate($qrData);
                             $qrSvg = preg_replace('/<\?xml[^>]*\?>/i', '', $qrSvg);
                             $qrSvg = trim($qrSvg);
                             $qrDataUri = 'data:image/svg+xml;charset=utf-8,' . rawurlencode($qrSvg);
