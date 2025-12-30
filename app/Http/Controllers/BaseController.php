@@ -13,7 +13,7 @@ class BaseController extends Controller
         return response()->json([
             'message' => $message,
             'data' => $data,
-        ], $code);
+        ], $code)->setEncodingOptions(JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     protected function errorResponse($message, $code = 400): JsonResponse
