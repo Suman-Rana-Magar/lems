@@ -20,11 +20,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS if explicitly set in env or if APP_URL uses https
+        // Force HTTPS if explicitly set in env or if APP_URL uses https/ngrok
         $forceHttps = env('FORCE_HTTPS', false);
         $appUrl = env('APP_URL', 'http://localhost');
         
-        if ($forceHttps || str_starts_with($appUrl, 'https://')) {
+        // Check if behind proxy (ngrok) or APP_URL is https
+        // Ngrok always uses HTTPS, so detect it automatically
+        $isHttps = $forceHttps 
+            || str_starts_with($appUrl, 'https://')
+            || str_contains($appUrl, 'ngrok.io')
+            || str_contains($appUrl, 'ngrok-free.app');
+        
+        if ($isHttps) {
             URL::forceScheme('https');
         }
     }

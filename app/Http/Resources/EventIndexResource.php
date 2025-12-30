@@ -34,7 +34,7 @@ class EventIndexResource extends JsonResource
             'city'             => $this->city,
             // 'latitude'         => $this->latitude,
             // 'longitude'        => $this->longitude,
-            'cover_image'      => asset('storage/' . $this->cover_image),
+            'cover_image'      => $this->cover_image ? url('storage/' . $this->cover_image) : null,
             // 'tags'             => $this->tags,
             'categories'       => CategoryResource::collection($this->whenLoaded('categories')),
         ];

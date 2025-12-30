@@ -20,7 +20,7 @@ class UserResource extends JsonResource
             'username' => $this->username,
             'email' => $this->email,
             'phone_no' => $this->phone_no,
-            'profile_picture' => asset('storage/' . $this->profile_picture),
+            'profile_picture' => $this->profile_picture ? url('storage/' . $this->profile_picture) : null,
             'address' => $this->when($this->relationLoaded('municipality') && $this->municipality, function () {
                 $municipality = $this->municipality;
                 $district = $municipality->relationLoaded('district') ? $municipality->district : null;
