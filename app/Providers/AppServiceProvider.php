@@ -26,10 +26,23 @@ class AppServiceProvider extends ServiceProvider
         
         // Check if behind proxy (ngrok) or APP_URL is https
         // Ngrok always uses HTTPS, so detect it automatically
+        // Check both APP_URL and actual request hostname for ngrok detection
+        $requestHost = !app()->runningInConsole() ? request()->getHost() : '';
+        $isNgrok = str_contains($appUrl, 'ngrok.io')
+            || str_contains($appUrl, 'ngrok-free.app')
+            || str_contains($appUrl, 'ngrok-free.dev')
+            || str_contains($requestHost, 'ngrok.io')
+            || str_contains($requestHost, 'ngrok-free.app')
+            || str_contains($requestHost, 'ngrok-free.dev');
+        
         $isHttps = $forceHttps 
             || str_starts_with($appUrl, 'https://')
-            || str_contains($appUrl, 'ngrok.io')
-            || str_contains($appUrl, 'ngrok-free.app');
+            || $isNgrok
+            || (!app()->runningInConsole() && (
+                request()->header('X-Forwarded-Proto') === 'https' ||
+                request()->server('HTTP_X_FORWARDED_PROTO') === 'https' ||
+                request()->server('HTTPS') === 'on'
+            ));
         
         if ($isHttps) {
             URL::forceScheme('https');
