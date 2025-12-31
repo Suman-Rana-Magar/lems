@@ -6,6 +6,7 @@ use App\Models\Municipality;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as LengthAwarePaginate;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 trait Helper
 {
@@ -75,20 +76,54 @@ trait Helper
      */
     public function getAddressFromCoordinates(float $lat, float $lon, string $language = 'en', int $zoom = 18, int $detail = 1): ?array
     {
-        $response = Http::withHeaders([
-            'User-Agent' => 'LEMS/1.0 (tilakranamagar123456@example.com)'
-        ])->get('https://nominatim.openstreetmap.org/reverse', [
-            'format' => 'json',
-            'lat' => $lat,
-            'lon' => $lon,
-            'zoom' => $zoom,
-            'addressdetails' => $detail,
-            'accept-language' => $language
-        ]);
+        // Use environment variable for email, fallback to a default
+        $email = env('OSM_USER_EMAIL', 'admin@lems.com');
+        $userAgent = "LEMS/1.0 ({$email})";
+        
+        try {
+            $response = Http::timeout(10)
+                ->retry(2, 100)
+                ->withHeaders([
+                    'User-Agent' => $userAgent,
+                    'Accept' => 'application/json'
+                ])
+                ->get('https://nominatim.openstreetmap.org/reverse', [
+                    'format' => 'json',
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'zoom' => $zoom,
+                    'addressdetails' => $detail,
+                    'accept-language' => $language
+                ]);
 
-        if ($response->successful()) {
-            $data = $response->json();
-            return $data['address'] ?? null;
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                // Check if we got a valid response with address data
+                if (isset($data['address']) && is_array($data['address']) && !empty($data['address'])) {
+                    return $data['address'];
+                }
+                
+                // Log if address is missing
+                Log::warning('OSM API returned success but no address data', [
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'response' => $data
+                ]);
+            } else {
+                Log::error('OSM API request failed', [
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('OSM API exception', [
+                'lat' => $lat,
+                'lon' => $lon,
+                'error' => $e->getMessage()
+            ]);
         }
 
         return null;
@@ -97,17 +132,19 @@ trait Helper
     /**
      * Convert the raw OSM address array into a compact human-readable string.
      */
-    public function compactAddress(array $geo): string
+    public function compactAddress(array $geo): ?string
     {
         $parts = [];
 
-        // Municipality / ward
+        // Municipality / ward / city
         if (!empty($geo['city_district'])) {
             $parts[] = $geo['city_district'];
         } elseif (!empty($geo['city'])) {
             $parts[] = $geo['city'];
         } elseif (!empty($geo['town'])) {
             $parts[] = $geo['town'];
+        } elseif (!empty($geo['village'])) {
+            $parts[] = $geo['village'];
         }
 
         // Suburb / neighborhood
@@ -119,13 +156,15 @@ trait Helper
             $parts[] = $geo['quarter'];
         }
 
-        // District / county
+        // District / county / state
         if (!empty($geo['county'])) {
             $parts[] = $geo['county'];
         } elseif (!empty($geo['state_district'])) {
             $parts[] = $geo['state_district'];
         } elseif (!empty($geo['region'])) {
             $parts[] = $geo['region'];
+        } elseif (!empty($geo['state'])) {
+            $parts[] = $geo['state'];
         }
 
         // Country
@@ -136,7 +175,8 @@ trait Helper
         // Remove duplicates and empty values
         $parts = array_unique(array_filter($parts));
 
-        return implode(', ', $parts);
+        // Return null if no parts found, otherwise return joined string
+        return empty($parts) ? null : implode(', ', $parts);
     }
 
     /**
@@ -146,28 +186,25 @@ trait Helper
     {
         $addressArray = $this->getAddressFromCoordinates($lat, $lon);
 
-        // dd($addressArray);
-
-        // $munnicipalityKeys = ['municipality','city'];
-
+        // Generate compact address from the address array
         $compact = $addressArray ? $this->compactAddress($addressArray) : null;
 
+        // Generate Google Maps URL
         $mapUrl = "https://www.google.com/maps/place/{$lat},{$lon}/@{$lat},{$lon},17z";
 
         // Determine the city / municipality for accuracy
         $city = null;
         if ($addressArray) {
-            if (!empty($addressArray['city'])) {
-                $city = $addressArray['city'];
-            } elseif (!empty($addressArray['town'])) {
-                $city = $addressArray['town'];
-            } elseif (!empty($addressArray['village'])) {
-                $city = $addressArray['village'];
-            } elseif (!empty($addressArray['city_district'])) {
-                $city = $addressArray['city_district'];
+            // Try multiple keys to find the city name
+            $cityKeys = ['city', 'town', 'village', 'city_district', 'municipality', 'county'];
+            foreach ($cityKeys as $key) {
+                if (!empty($addressArray[$key])) {
+                    $city = $addressArray[$key];
+                    break;
+                }
             }
         }
-
+        
         return [
             'map_address' => $compact,
             'map_url' => $mapUrl,
@@ -177,7 +214,7 @@ trait Helper
 
     public function getMunicipalityIdByName(?string $name)
     {
-        if ($name!==null) {
+        if ($name !== null) {
             $name = explode('-', $name)[0];
             $municipalityId = Municipality::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])
                 ->orderByRaw('LENGTH(name)') // shorter names first (more precise)
@@ -210,5 +247,4 @@ trait Helper
             return 'data:image/svg+xml;charset=utf-8,' . rawurlencode($qrSvg);
         }
     }
-    
 }
