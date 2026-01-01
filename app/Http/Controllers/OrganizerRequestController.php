@@ -30,6 +30,12 @@ class OrganizerRequestController extends BaseController
         return !is_object($data) ? $this->errorResponse($data) : $this->successResponse('Organizer request submitted successfully', OrganizerRequestResource::make($data));
     }
 
+    public function myRequests(PaginationRequest $request)
+    {
+        $data = $this->service->myRequests($request->validated());
+        return $this->successResponse('My organizer requests retrieved successfully', $data);
+    }
+
     public function show(OrganizerRequest $organizerRequest)
     {
         $data = $this->service->show($organizerRequest);

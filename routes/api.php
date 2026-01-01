@@ -34,6 +34,55 @@ Route::middleware(['api'])->group(function () {
     Route::get('/resources/address', [ResourcesController::class, 'address']);
     Route::get('/resources/categories', [ResourcesController::class, 'categories']);
     // Route::get('/resources/enums', [ResourcesController::class, 'enums']);
+
+    // Storage route with CORS headers and proper Content-Type to fix ORB blocking
+    // Handle OPTIONS preflight requests
+    Route::options('/storage/{path}', function () {
+        return response('', 200)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            ->header('Access-Control-Max-Age', '86400');
+    })->where('path', '.*');
+    
+    Route::get('/storage/{path}', function ($path) {
+        $file = storage_path('app/public/' . $path);
+        
+        if (!file_exists($file)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+        
+        // Detect MIME type based on file extension
+        $mimeType = mime_content_type($file);
+        if (!$mimeType) {
+            // Fallback MIME types for common extensions
+            $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $mimeTypes = [
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'svg' => 'image/svg+xml',
+                'pdf' => 'application/pdf',
+            ];
+            $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
+        }
+        
+        // THE FIX - Add these headers to prevent ORB blocking and set correct Content-Type
+        // Important: Set all headers explicitly for ngrok and cross-browser compatibility
+        $response = response()->file($file);
+        $response->headers->set('Content-Type', $mimeType);
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        $response->headers->set('Access-Control-Max-Age', '86400');
+        $response->headers->set('Cross-Origin-Resource-Policy', 'cross-origin'); // CRITICAL for ORB!
+        $response->headers->set('Cross-Origin-Embedder-Policy', 'unsafe-none'); // ALSO NEEDED!
+        $response->headers->set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+        
+        return $response;
+    })->where('path', '.*');
 });
 
 Route::middleware(['api', 'auth:api'])->group(function () {
@@ -56,6 +105,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
     Route::group(['prefix' => 'organizer-request', 'middleware' => ['isEmailVerified', 'isPhoneVerified']], function () {
         Route::post('/', [OrganizerRequestController::class, 'store']);
+        Route::get('/my', [OrganizerRequestController::class, 'myRequests']);
         Route::get('/{organizerRequest}', [OrganizerRequestController::class, 'show']);
 
         Route::get('/', [OrganizerRequestController::class, 'index'])->middleware('role:' . RoleEnum::ADMIN->value);

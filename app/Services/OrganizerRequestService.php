@@ -21,6 +21,12 @@ class OrganizerRequestService
         return $response;
     }
 
+    public function myRequests($request)
+    {
+        $response = $this->paginateRequest($request, Auth::user()->organizerRequests(), OrganizerRequestResource::class, '*', 'user');
+        return $response;
+    }
+
     public function show($organizerRequest)
     {
         if (Auth::user()->role !== RoleEnum::ADMIN->value)
