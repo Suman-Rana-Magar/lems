@@ -9,5 +9,3 @@ Route::get('/', function () {
 });
 Route::post('/chat', [OllamaService::class, 'chatSystem']);
 // Route::post('/chat', [GeminiService::class, 'chatWithGemini']);
-
-

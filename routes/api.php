@@ -15,6 +15,22 @@ use App\Http\Controllers\ImageController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api'])->group(function () {
+    Route::get('storage/{path}', function ($path) {
+        $filePath = storage_path('app/public/' . $path);
+
+        if (!file_exists($filePath)) {
+            abort(404);
+        }
+
+        $file = \Illuminate\Support\Facades\File::get($filePath);
+        $type = \Illuminate\Support\Facades\File::mimeType($filePath);
+
+        $response = \Illuminate\Support\Facades\Response::make($file, 200);
+        $response->header("Content-Type", $type);
+
+        return $response;
+    })->where('path', '.*');
+
     //auth
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
