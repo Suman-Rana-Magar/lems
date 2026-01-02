@@ -19,7 +19,7 @@ class LoginResource extends JsonResource
             'name' => $this->name,
             'username' => $this->username,
             'email' => $this->email,
-            'profile_picture' => $this->profile_picture ? url('api/storage/' . $this->profile_picture) : null,
+            'profile_picture' => $this->profile_picture ? url('storage/' . $this->profile_picture) : null,
             'role' => $this->role,
             'token' => $this->token,
         ];
