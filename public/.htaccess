@@ -1,6 +1,4 @@
 <IfModule mod_rewrite.c>
-    require __DIR__ . '/../../lems_root/vendor/autoload.php';
-    $app = require_once __DIR__ . '/../../lems_root/bootstrap/app.php';
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
