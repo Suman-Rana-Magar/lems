@@ -15,13 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
+    'paths' => ['api/*', 'oauth/*', 'storage/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://local-event-management-system-lems.vercel.app',
-    ],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
