@@ -27,7 +27,7 @@ class EventIndexResource extends JsonResource
             'total_seat'       => $this->total_seat,
             'remaining_seat'   => $this->remaining_seat,
             'status'           => $this->status(),
-            // 'view_count'       => $this->view_count,
+            'view_count'       => $this->view_count,
             'seat_price'       => $this->seat_price,
             'map_address'      => $this->map_address,
             'map_url'          => $this->map_url,

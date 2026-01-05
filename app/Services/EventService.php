@@ -41,6 +41,9 @@ class EventService
     {
         $event = Event::where('slug', $slug)->first();
         if (!$event) return 'Event not found';
+
+        $event->increment('view_count');
+
         return $event->load(['categories', 'organizer', 'images', 'feedbacks.user']);
     }
 
