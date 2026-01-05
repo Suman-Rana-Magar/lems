@@ -68,6 +68,16 @@ class Event extends Model
         return $this->hasMany(EventRegistration::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(EventImage::class);
+    }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(EventFeedback::class);
+    }
+
     public function status()
     {
         // If explicitly cancelled in DB, honor that first

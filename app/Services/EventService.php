@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EventCancelled;
 
 class EventService
 {
@@ -39,7 +41,7 @@ class EventService
     {
         $event = Event::where('slug', $slug)->first();
         if (!$event) return 'Event not found';
-        return $event->load('categories');
+        return $event->load(['categories', 'organizer', 'images', 'feedbacks.user']);
     }
 
     public function store(array $data)
@@ -136,12 +138,70 @@ class EventService
         $event->save();
 
         // Notify registered users (placeholder)
+        // Notify registered users
         foreach ($event->registrations as $registration) {
-            // Example: dispatch notification/email
-            // Notification::send($registration->user, new EventCancelledNotification($event));
+            if ($registration->user) {
+                Mail::to($registration->user)->send(new EventCancelled($event, $registration->user));
+            }
         }
 
         return true;
+    }
+
+    public function uploadImages($eventId, array $images)
+    {
+        $event = Event::findOrFail($eventId);
+
+        if ($event->organizer_id !== Auth::id()) {
+            return "Unauthorized";
+        }
+
+        if ($event->status() !== 'completed') {
+            return "Event must be completed to upload images.";
+        }
+
+        $currentCount = $event->images()->count();
+        $newCount = count($images);
+
+        if ($currentCount + $newCount > 5) {
+            return "You can only upload a maximum of 5 images.";
+        }
+
+        $uploadedImages = [];
+        foreach ($images as $image) {
+            if (is_file($image)) {
+                $path = $this->UploadFile($image, 'event_images');
+                $uploadedImages[] = $event->images()->create(['image' => $path['path']]);
+            }
+        }
+
+        return $uploadedImages;
+    }
+
+    public function storeFeedback($eventId, array $data)
+    {
+        $event = Event::findOrFail($eventId);
+
+        if ($event->status() !== 'completed') {
+            return "Event must be completed to give feedback.";
+        }
+
+        $userId = Auth::id();
+
+        $isRegistered = $event->registrations()->where('user_id', $userId)->exists();
+
+        if (!$isRegistered) {
+            return "Only registered users can give feedback.";
+        }
+
+        if ($event->feedbacks()->where('user_id', $userId)->exists()) {
+            return "You have already provided feedback for this event.";
+        }
+
+        return $event->feedbacks()->create([
+            'user_id' => $userId,
+            'comment' => $data['comment']
+        ]);
     }
 
     private function checkOverlappingEvent(string $startDatetime, string $endDatetime, $event = null): bool

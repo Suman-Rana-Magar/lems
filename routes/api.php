@@ -73,6 +73,11 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::post('/', [EventController::class, 'store']);
         Route::post('/{event}', [EventController::class, 'update']);
         Route::post('/{event}/cancel', [EventController::class, 'cancel']);
+        Route::post('/{event}/upload-images', [EventController::class, 'uploadImages']);
+    });
+
+    Route::group(['prefix' => 'event', 'middleware' => ['isEmailVerified']], function () {
+        Route::post('/{event}/feedback', [EventController::class, 'storeFeedback']);
     });
 
     // Route::post('/phone/send-otp', [PhoneVerificationController::class, 'sendOtp'])->middleware(['isEmailVerified']);
