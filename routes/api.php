@@ -16,17 +16,25 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api'])->group(function () {
     Route::get('storage/{path}', function ($path) {
+        // Security: Prevent directory traversal
+        if (str_contains($path, '..') || str_contains($path, '\0')) {
+            abort(400, 'Invalid path');
+        }
+
         $filePath = storage_path('app/public/' . $path);
 
-        if (!file_exists($filePath)) {
+        if (!File::exists($filePath)) {
             abort(404);
         }
 
-        $file = \Illuminate\Support\Facades\File::get($filePath);
-        $type = \Illuminate\Support\Facades\File::mimeType($filePath);
+        $file = File::get($filePath);
+        $type = File::mimeType($filePath);
 
-        $response = \Illuminate\Support\Facades\Response::make($file, 200);
-        $response->header("Content-Type", $type);
+        $response = Response::make($file, 200);
+        $response->header('Content-Type', $type);
+
+        // Optional: Add caching
+        $response->header('Cache-Control', 'public, max-age=31536000, immutable');
 
         return $response;
     })->where('path', '.*');

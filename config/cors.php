@@ -6,20 +6,13 @@ return [
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
     */
 
-    'paths' => ['api/*', 'oauth/*', 'storage/*'],
+    'paths' => ['api/*', 'oauth/*'],  // 'oauth/*' covers Passport's routes like /oauth/token, /oauth/authorize, etc.
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['*'],  // In production, replace with your exact frontend URL, e.g., 'https://local-event-management-system-lems.vercel.app'
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +22,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,  // Set to true if using credentials (cookies/tokens with withCredentials in Axios); test carefully with Passport
 
 ];
