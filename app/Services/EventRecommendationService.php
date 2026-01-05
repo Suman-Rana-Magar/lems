@@ -23,37 +23,109 @@ class EventRecommendationService
 
     private static function getRecommendedEventsForNewUser(User $user)
     {
-        $userInterests = $user->interests()->get()->pluck('id');
-        $userMunicipality = $user->municipality_id;
-        $now = Carbon::now();
+        $userInterests = $user->interests()->pluck('categories.id')->toArray();
+        $query = Event::query()
+            ->whereHas('categories', function ($q) use ($userInterests) {
+                $q->whereIn('categories.id', $userInterests);
+            });
 
-        $events = Event::query()
-            // 1) same category as user interests
-            ->whereHas('categories', function ($query) use ($userInterests) {
-                $query->whereIn('categories.id', $userInterests);
-            })
-            // 2) exclude cancelled events
-            ->where('status', '!=', 'cancelled')
-            // 3) only upcoming events (start time after now)
-            ->where('start_datetime', '>', $now)
-            ->with('categories');
-
-        // 4) prioritize municipality proximity (same first, then nearest by id), then nearest start time
-        if ($userMunicipality) {
-            $events->orderByRaw('CASE WHEN municipality_id = ? THEN 0 ELSE 1 END', [$userMunicipality])
-                ->orderByRaw('ABS(COALESCE(municipality_id, ? + 1000000) - ?) ASC', [$userMunicipality, $userMunicipality]);
-        } else {
-            // If user municipality unknown, prefer events that have municipality set
-            $events->orderByRaw('CASE WHEN municipality_id IS NULL THEN 1 ELSE 0 END');
-        }
-
-        return $events->orderBy('start_datetime')
+        return self::applyStandardFiltersAndSort($query, $user->municipality_id)
             ->limit(10)
             ->get();
     }
 
     private static function getRecommendedEventsForExperiencedUser(User $user)
     {
-        return [];
+        // 1. Analyze History
+        $registrations = $user->registrations()->with('event.categories')->latest('registered_at')->get();
+        if ($registrations->isEmpty()) {
+            return self::getRecommendedEventsForNewUser($user);
+        }
+
+        $mostRecentCategory = $registrations->first()->event->categories->first()->id ?? null;
+
+        $categoryCounts = [];
+        foreach ($registrations as $reg) {
+            foreach ($reg->event->categories as $cat) {
+                $categoryCounts[$cat->id] = ($categoryCounts[$cat->id] ?? 0) + 1;
+            }
+        }
+        $mostJoinedCategory = array_keys($categoryCounts, max($categoryCounts))[0] ?? null;
+
+        $targetCategoryIds = array_filter(array_unique([$mostRecentCategory, $mostJoinedCategory]));
+
+        if (empty($targetCategoryIds)) {
+            return self::getRecommendedEventsForNewUser($user);
+        }
+
+        // 2. Primary Query
+        $primaryEvents = self::getEventsByCategories($targetCategoryIds, $user->municipality_id);
+
+        if ($primaryEvents->count() >= 10) {
+            return $primaryEvents->take(10);
+        }
+
+        // 3. Fallback Mechanism (Bidirectional check)
+        $relatedCategoryIds = \App\Models\CategoryRelation::where(function ($query) use ($targetCategoryIds) {
+            $query->whereIn('category_a_id', $targetCategoryIds)
+                ->orWhereIn('category_b_id', $targetCategoryIds);
+        })
+            ->orderByDesc('relatedness')
+            ->get()
+            ->map(function ($relation) use ($targetCategoryIds) {
+                // Return the ID that is NOT the target (the related one)
+                // If both are targets, it doesn't matter which we pick, but ideally we want new ones.
+                // However, since we unique() later, picking the other is safe.
+                if (in_array($relation->category_a_id, $targetCategoryIds)) {
+                    return $relation->category_b_id;
+                }
+                return $relation->category_a_id;
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $needed = 10 - $primaryEvents->count();
+        $relatedEvents = collect();
+
+        if (!empty($relatedCategoryIds)) {
+            $excludeIds = $primaryEvents->pluck('id')->toArray();
+            $relatedEvents = self::getEventsByCategories($relatedCategoryIds, $user->municipality_id, $excludeIds, $needed);
+        }
+
+        return $primaryEvents->merge($relatedEvents);
+    }
+
+    private static function getEventsByCategories(array $categoryIds, $municipalityId, array $excludeEventIds = [], $limit = 10)
+    {
+        $query = Event::query()
+            ->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            });
+
+        if (!empty($excludeEventIds)) {
+            $query->whereNotIn('id', $excludeEventIds);
+        }
+
+        return self::applyStandardFiltersAndSort($query, $municipalityId)
+            ->limit($limit)
+            ->get();
+    }
+
+    private static function applyStandardFiltersAndSort($query, $municipalityId)
+    {
+        $now = Carbon::now();
+        $query->where('status', '!=', 'cancelled')
+            ->where('start_datetime', '>', $now)
+            ->with('categories');
+
+        if ($municipalityId) {
+            $query->orderByRaw('CASE WHEN municipality_id = ? THEN 0 ELSE 1 END', [$municipalityId])
+                ->orderByRaw('ABS(COALESCE(municipality_id, ? + 1000000) - ?) ASC', [$municipalityId, $municipalityId]);
+        } else {
+            $query->orderByRaw('CASE WHEN municipality_id IS NULL THEN 1 ELSE 0 END');
+        }
+
+        return $query->orderBy('start_datetime');
     }
 }
