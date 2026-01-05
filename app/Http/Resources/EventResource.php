@@ -38,10 +38,10 @@ class EventResource extends JsonResource
             'tags'             => $this->tags,
             'categories'       => CategoryResource::collection($this->whenLoaded('categories')),
             'organizer'        => $this->whenLoaded('organizer', function () {
-                return [
+                return $this->organizer ? [
                     'name' => $this->organizer->name,
                     'profile_picture' => $this->organizer->profile_picture ? url('api/storage/' . $this->organizer->profile_picture) : null,
-                ];
+                ] : null;
             }),
             'event_images'     => $this->whenLoaded('images', function () {
                 return $this->images->map(function ($image) {
