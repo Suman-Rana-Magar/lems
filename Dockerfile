@@ -3,8 +3,8 @@ FROM php:8.2-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git unzip libpng-dev libonig-dev libxml2-dev zip curl libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache
+    git unzip libpng-dev libonig-dev libxml2-dev zip curl libzip-dev libsodium-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache sodium
 
 # Copy Composer from official image
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
