@@ -31,7 +31,7 @@ class EventRegistrationResource extends JsonResource
                 'map_address' => $this->event->map_address,
                 'map_url' => $this->event->map_url,
                 'status' => $this->event->status,
-                'cover_image' => $this->event->cover_image ? url('storage/' . $this->event->cover_image) : null,
+                'cover_image' => $this->event->cover_image ? url('api/storage/' . $this->event->cover_image) : null,
             ],
             'cancelled_at' => $this->when($this->cancelled_at, function () {
                 return $this->cancelled_at->setTimezone('Asia/Kathmandu')->format('Y-m-d H:i:s');
