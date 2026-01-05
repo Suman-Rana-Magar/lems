@@ -24,12 +24,14 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# === ADD CORS HEADERS ONLY FOR STATIC FILES (images, etc.) ===
+# === FIXED CORS HEADERS FOR STATIC FILES ===
 <IfModule mod_headers.c>
     <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|pdf|js|css|woff|woff2|ttf|eot|ico)$">
-        Header set Access-Control-Allow-Origin "*"
-        # Optional: for better caching of CORS responses
+        # Match this exactly with your React URL
+        Header set Access-Control-Allow-Origin "https://local-event-management-system-lems.vercel.app"
         Header set Access-Control-Allow-Methods "GET, OPTIONS"
         Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+        # Required if you use withCredentials: true in Axios for images
+        Header set Access-Control-Allow-Credentials "true"
     </FilesMatch>
 </IfModule>
