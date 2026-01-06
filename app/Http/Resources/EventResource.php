@@ -28,6 +28,7 @@ class EventResource extends JsonResource
             'remaining_seat'   => $this->remaining_seat,
             'status'           => $this->status(),
             'view_count'       => $this->view_count,
+            'is_registered'    => $request->user('api') ? $this->registrations()->where('user_id', $request->user('api')->id)->exists() : false,
             'seat_price'       => $this->seat_price,
             'map_address'      => $this->map_address,
             'map_url'          => $this->map_url,
@@ -40,6 +41,8 @@ class EventResource extends JsonResource
             'organizer'        => $this->whenLoaded('organizer', function () {
                 return $this->organizer ? [
                     'name' => $this->organizer->name,
+                    'email' => $this->organizer->email,
+                    'phone' => $this->organizer->phone_no,
                     'profile_picture' => $this->organizer->profile_picture ? url('api/storage/' . $this->organizer->profile_picture) : null,
                 ] : null;
             }),

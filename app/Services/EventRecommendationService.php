@@ -29,9 +29,18 @@ class EventRecommendationService
                 $q->whereIn('categories.id', $userInterests);
             });
 
-        return self::applyStandardFiltersAndSort($query, $user->municipality_id)
+        $events = self::applyStandardFiltersAndSort($query, $user->municipality_id)
             ->limit(10)
             ->get();
+
+        if ($events->count() < 10) {
+            $needed = 10 - $events->count();
+            $excludeIds = $events->pluck('id')->toArray();
+            $popularEvents = self::getPopularEvents($needed, $excludeIds, $user->municipality_id);
+            $events = $events->merge($popularEvents);
+        }
+
+        return $events;
     }
 
     private static function getRecommendedEventsForExperiencedUser(User $user)
@@ -93,7 +102,16 @@ class EventRecommendationService
             $relatedEvents = self::getEventsByCategories($relatedCategoryIds, $user->municipality_id, $excludeIds, $needed);
         }
 
-        return $primaryEvents->merge($relatedEvents);
+        $recommended = $primaryEvents->merge($relatedEvents);
+
+        if ($recommended->count() < 10) {
+            $needed = 10 - $recommended->count();
+            $excludeIds = $recommended->pluck('id')->toArray();
+            $popularEvents = self::getPopularEvents($needed, $excludeIds, $user->municipality_id);
+            $recommended = $recommended->merge($popularEvents);
+        }
+
+        return $recommended;
     }
 
     private static function getEventsByCategories(array $categoryIds, $municipalityId, array $excludeEventIds = [], $limit = 10)
@@ -105,6 +123,19 @@ class EventRecommendationService
 
         if (!empty($excludeEventIds)) {
             $query->whereNotIn('id', $excludeEventIds);
+        }
+
+        return self::applyStandardFiltersAndSort($query, $municipalityId)
+            ->limit($limit)
+            ->get();
+    }
+
+    private static function getPopularEvents($limit, $excludeIds = [], $municipalityId = null)
+    {
+        $query = Event::query();
+
+        if (!empty($excludeIds)) {
+            $query->whereNotIn('id', $excludeIds);
         }
 
         return self::applyStandardFiltersAndSort($query, $municipalityId)
@@ -126,6 +157,7 @@ class EventRecommendationService
             $query->orderByRaw('CASE WHEN municipality_id IS NULL THEN 1 ELSE 0 END');
         }
 
-        return $query->orderBy('start_datetime');
+        return $query->orderByDesc('view_count')
+            ->orderBy('start_datetime');
     }
 }
