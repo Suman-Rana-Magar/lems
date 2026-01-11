@@ -47,6 +47,57 @@ class EventService
         return $event->load(['categories', 'organizer', 'images', 'feedbacks.user']);
     }
 
+    public function getEventsByCategory($slug)
+    {
+        $category = \App\Models\Category::where('slug', $slug)->first();
+        if (!$category) return 'Category not found';
+
+        return Event::byCategory($slug)
+            ->where('status', '!=', 'cancelled')
+            ->with(['categories', 'organizer', 'images'])
+            ->latest()
+            ->paginate(12);
+    }
+
+    public function getEventsByStatus($status)
+    {
+        return Event::byStatus($status)
+            ->with(['categories', 'organizer', 'images'])
+            ->latest()
+            ->paginate(12);
+    }
+
+    public function getEventsByDateRange($startDate, $endDate = null)
+    {
+        // If no end date, assume single day or open ended?
+        // Let's assume the route handles the "range" parsing or we accept a generic "date" string
+        // For now, let's implement strict range.
+        if (!$endDate) $endDate = $startDate;
+
+        return Event::byDateRange($startDate, $endDate)
+            ->where('status', '!=', 'cancelled')
+            ->with(['categories', 'organizer', 'images'])
+            ->latest()
+            ->paginate(12);
+    }
+
+    public function getEventsByPrice($min, $max)
+    {
+        return Event::byPriceRange($min, $max)
+            ->where('status', '!=', 'cancelled')
+            ->with(['categories', 'organizer', 'images'])
+            ->latest()
+            ->paginate(12);
+    }
+
+    public function getNearbyEvents($lat, $lng, $radius = 10)
+    {
+        return Event::nearMe($lat, $lng, $radius)
+            ->where('status', '!=', 'cancelled')
+            ->with(['categories', 'organizer', 'images'])
+            ->paginate(12);
+    }
+
     public function store(array $data)
     {
         DB::beginTransaction();

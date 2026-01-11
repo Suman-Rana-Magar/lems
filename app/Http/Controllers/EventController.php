@@ -71,4 +71,54 @@ class EventController extends BaseController
 
         return is_string($data) ? $this->errorResponse($data) : $this->successResponse('Feedback submitted successfully', $data);
     }
+
+    public function byCategory(string $slug)
+    {
+        $data = $this->eventService->getEventsByCategory($slug);
+        return is_string($data) ? $this->errorResponse($data) : $this->successResponse('Events retrieved successfully', $data);
+    }
+
+    public function byStatus(string $status)
+    {
+        $data = $this->eventService->getEventsByStatus($status);
+        return $this->successResponse('Events retrieved successfully', $data);
+    }
+
+    public function byDate(string $range)
+    {
+        // Format: YYYY-MM-DD,YYYY-MM-DD or YYYY-MM-DD
+        $dates = explode(',', $range);
+        $start = $dates[0];
+        $end = isset($dates[1]) ? $dates[1] : null;
+
+        $data = $this->eventService->getEventsByDateRange($start, $end);
+        return $this->successResponse('Events retrieved successfully', $data);
+    }
+
+    public function byPrice(string $range)
+    {
+        // Format: min-max or min,max
+        $prices = preg_split('/[-,]/', $range);
+        $min = $prices[0] ?? 0;
+        $max = $prices[1] ?? 99999999;
+
+        $data = $this->eventService->getEventsByPrice($min, $max);
+        return $this->successResponse('Events retrieved successfully', $data);
+    }
+
+    public function nearMe(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'radius' => 'nullable|numeric'
+        ]);
+
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+        $radius = $request->input('radius', 10); // default 10km
+
+        $data = $this->eventService->getNearbyEvents($lat, $lng, $radius);
+        return $this->successResponse('Events retrieved successfully', $data);
+    }
 }

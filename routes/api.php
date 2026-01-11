@@ -53,6 +53,15 @@ Route::middleware(['api'])->group(function () {
 
     //event
     Route::get('/event', [EventController::class, 'index']);
+
+    //event filters
+    Route::get('/event/category/{slug}', [EventController::class, 'byCategory']);
+    Route::get('/event/status/{status}', [EventController::class, 'byStatus']);
+    Route::get('/event/date/{range}', [EventController::class, 'byDate']);
+    Route::get('/event/price/{range}', [EventController::class, 'byPrice']);
+    Route::get('/event/near-me', [EventController::class, 'nearMe']);
+
+    //event
     Route::get('/event/{slug}', [EventController::class, 'showBySlug']);
 
     //resources

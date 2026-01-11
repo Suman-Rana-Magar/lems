@@ -104,4 +104,66 @@ class Event extends Model
 
         return $this->getAttribute('status');
     }
+
+    // Scopes
+    public function scopeByCategory($query, $slug)
+    {
+        return $query->whereHas('categories', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        });
+    }
+
+    public function scopeByStatus($query, $status)
+    {
+        // Note: This relies on the DB column 'status' or complex logic.
+        // The DB 'status' enum is ['upcoming', 'ongoing', 'completed', 'cancelled'].
+        // However, the 'status()' method uses dynamic time checks.
+        // For accurate filtering, we must replicate the logical status.
+
+        $timezone = 'Asia/Kathmandu';
+        $now = Carbon::now($timezone);
+
+        if ($status === 'cancelled') {
+            return $query->where('status', 'cancelled');
+        }
+
+        // We only consider non-cancelled events for time-based statuses
+        $query->where('status', '!=', 'cancelled');
+
+        if ($status === 'upcoming') {
+            return $query->where('start_datetime', '>', $now);
+        } elseif ($status === 'ongoing') {
+            return $query->where('start_datetime', '<=', $now)
+                ->where('end_datetime', '>=', $now);
+        } elseif ($status === 'completed') {
+            return $query->where('end_datetime', '<', $now);
+        }
+
+        return $query;
+    }
+
+    public function scopeByDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('start_datetime', [$startDate, $endDate]);
+    }
+
+    public function scopeByPriceRange($query, $min, $max)
+    {
+        return $query->whereBetween('seat_price', [$min, $max]);
+    }
+
+    public function scopeNearMe($query, $lat, $lng, $radius = 10)
+    {
+        // Haversine formula
+        $haversine = "(6371 * acos(cos(radians(?))
+                        * cos(radians(latitude))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians(latitude))))";
+
+        return $query->select('*')
+            ->selectRaw("{$haversine} AS distance", [$lat, $lng, $lat])
+            ->whereRaw("{$haversine} < ?", [$lat, $lng, $lat, $radius])
+            ->orderBy('distance');
+    }
 }
